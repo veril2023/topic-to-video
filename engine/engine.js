@@ -21,6 +21,15 @@
   if (!T) throw new Error('engine.js: 找不到 window.AUDIO_TIMELINE，请先引入 timeline.js');
   var SUBS = T.subtitles || [];
 
+  /* 字幕是这条路线上唯一"静默失败"的东西：subtitles 为空时画面照常渲染、门也照常通过，
+   * 但成片一个字的字幕都没有。所以这里必须吵一声，而不是安静地降级成 []。 */
+  if (!SUBS.length) {
+    var _msg = 'engine.js: window.AUDIO_TIMELINE.subtitles 是空的，这一版画面不会出现任何字幕。\n' +
+      '  通常是 build_audio.py 没跑成功，或 timeline.js 是手写的。重跑：python engine/build_audio.py <集目录>';
+    if (window.console && console.error) console.error(_msg);
+    window.__MV_SUBS_MISSING = true;
+  }
+
   /* ---------------------------------------------------------------- 基础查询 */
   function g(id) { return document.getElementById(id); }
 

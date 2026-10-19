@@ -277,6 +277,25 @@ async function main() {
     })).result.value;
     console.log(`[timeline] duration=${duration.toFixed(2)}s  fps=${FPS}  预计 ${Math.ceil(duration * FPS)} 帧`);
 
+    // 字幕缺失是唯一"渲染成功但成片废掉"的失败模式：画面、编码、时长全部正常，
+    // 就是没有字。所有门都查不出来，所以在这里直说。
+    const subInfo = (await client.send('Runtime.evaluate', {
+      expression: `(function(){
+        var t = window.AUDIO_TIMELINE || {};
+        var s = t.subtitles || [];
+        if (!s.length) return {n: 0};
+        var first = s[0], last = s[s.length - 1];
+        return {n: s.length, from: first.start, to: last.end};
+      })()`,
+      returnByValue: true,
+    })).result.value;
+    if (!subInfo.n) {
+      console.warn('[字幕] ⚠ subtitles 为空 —— 这一版画面不会有任何字幕。');
+      console.warn('        重跑：python engine/build_audio.py <集目录>');
+    } else {
+      console.log(`[字幕] ${subInfo.n} 条  覆盖 ${subInfo.from.toFixed(2)}s – ${subInfo.to.toFixed(2)}s`);
+    }
+
     /* ---------------- probe：抽帧看画面 ---------------- */
     if (MODE === 'probe') {
       fs.mkdirSync(PROBE, { recursive: true });
