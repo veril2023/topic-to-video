@@ -37,11 +37,25 @@ ENV/
 Thumbs.db
 
 # Project-specific
-# 每集工作目录（含大量中间产物）—— 形如 ep01_标题 / S1_ep01_标题
+# 每集工作目录（含大量中间产物）—— 形如 01_标题 / ep01_标题 / S1_ep01_标题
+# 集目录一律不入库：里面是几千帧图和音频，几百 MB，且属于用户自己的内容
 ep[0-9][0-9]*/
+[0-9][0-9]_*/
 S[0-9]_ep[0-9][0-9]*/
 frames_ep*/
+probe_ep*/
 *_frames/
+chrome_tmp_*/
+
+# 品牌编译产物（从 brand.json 生成，改了就重跑 sync_brand.py）
+brand.css
+brand_mark.html
+cover_raw.jpg
+timeline.js
+
+# Node
+node_modules/
+package-lock.json
 
 # 帧文件与成片
 **/frames/

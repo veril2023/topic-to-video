@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>{{SERIES_NAME}} · ep{{EP_NO}}</title>
+<!-- 品牌变量：由 sync_brand.py 从 brand.json 生成，不要手改 -->
+<link rel="stylesheet" href="brand.css">
+<style>
+  /* ============================================================
+   * 骨架层：这一层不要改
+   * 安全区、字幕几何、SVG 变换修正都在这里，改错会直接导致越界或全黑
+   * ============================================================ */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#07080C;overflow:hidden}
+  #stage{
+    position:relative;width:1080px;height:1920px;overflow:hidden;
+    background:linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 100%);
+    font-family:'Microsoft YaHei','PingFang SC',sans-serif;color:var(--text);
+  }
+
+  /* 所有场景元素都用 .el：绝对定位 + 初始透明。
+     初始 opacity:0 是刻意的 —— 渲染器 seek(0) 时不该有任何元素亮着。 */
+  .el{position:absolute;opacity:0;will-change:opacity,transform}
+
+  /* 图片卡片（细边框 + 投影，让照片不像贴纸） */
+  .card{border-radius:20px;overflow:hidden;border:1.5px solid var(--line);
+        box-shadow:0 24px 60px rgba(0,0,0,.55);background:var(--bg0)}
+  .shotwrap{position:relative;width:100%;height:100%}
+  .shotwrap img{display:block;width:100%;height:100%;object-fit:cover}
+  /* 图片上下压暗，保证叠字可读 */
+  .shotwrap::after{content:'';position:absolute;inset:0;
+        background:linear-gradient(180deg,rgba(0,0,0,.32) 0%,rgba(0,0,0,0) 42%,rgba(0,0,0,.55) 100%)}
+
+  .cap{font-size:27px;color:var(--text-2);letter-spacing:1px}
+  .big{font-family:'Songti SC',STSong,serif;font-weight:700;line-height:1.3}
+  .mono{font-family:Georgia,'Cambria Math',serif}
+  .ctr{position:absolute;left:0;right:0;text-align:center}
+
+  /* SVG 内部 <g> 的 transform-origin 计算值是 0px 0px（不是父 svg 的 50%/50%），
+     scale() 会以用户坐标原点为中心把元素往右下推，越靠右偏得越多，最终越出安全区。
+     fill-box + center 让缩放落在自身包围盒中心。这一行必须保留。 */
+  #stage svg g{transform-box:fill-box;transform-origin:center}
+
+  /* 字幕容器 top=1330 / 高 220。
+     为什么不是 1340：46 字长句会切三行，原几何第三行墨迹底到 1506，
+     越出安全区下界 1500，正好压在抖音底部文案区上沿。
+     三种行数的墨迹范围现在都在 1338..1492 内。 */
+  #sub{position:absolute;left:0;top:1330px;opacity:0}
+
+  /* 常驻品牌角标。position/display 在这里，left/top/尺寸在 brand.css 里。
+     两者必须分开：位置和大小属于品牌可配置项，而「怎么排」属于骨架。 */
+  #bug{position:absolute;display:flex;align-items:center;pointer-events:none;
+       left:60px;top:220px}
+  #bug svg{display:block;width:57px;height:57px}
+  #bug .bt{margin-left:14px;font-size:33px;font-weight:700;letter-spacing:4px;
+           color:var(--text);opacity:.92}
+
+  /* ============================================================
+   * 场景层：从这里开始是你的创作区
+   * 每个镜头一个 <div class="el" id="sN-xxx">，用 MV.set() 驱动
+   * ============================================================ */
+  /*<<SCENE_CSS>>*/
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 品牌角标：常驻全片左上。logo 由 brand.json 指定，留空则用中性几何图形 -->
+  <div id="bug">
+    <!--<<BUG_SVG>>-->
+    <div class="bt">{{SERIES_NAME}}</div>
+  </div>
+
+  <!--<<SCENE_HTML>>-->
+
+  <!-- 字幕：烧进画面，不是外挂 srt -->
+  <svg id="sub" width="1080" height="220" viewBox="0 0 1080 220">
+    <text id="subT" x="540" y="100" text-anchor="middle" font-size="40"
+          font-family="'Microsoft YaHei','PingFang SC',sans-serif"
+          fill="var(--text)" stroke="#07080C" stroke-width="10"
+          style="paint-order:stroke;font-weight:600"></text>
+  </svg>
+
+</div>
+
+<script src="timeline.js"></script>
+<script src="engine.js"></script>
+<script>
+/* ============================================================
+ * 场景驱动层：你只需要写这一层
+ *
+ * 唯一一条规则：画面状态必须是 t 的纯函数。
+ *   错误：x += 1;              依赖上一帧，seek 时错乱
+ *   错误：el.animate();        CSS 动画引擎自己跑，seek 时对不上
+ *   正确：style.left = f(t);   给定 t 立刻算出位置
+ * ============================================================ */
+(function(){
+  var MV = window.MV;
+  var g = MV.g, set = MV.set, vis = MV.vis, P = MV.P, mk = MV.mk;
+  var out = MV.out, lin = MV.lin, back = MV.back, own = MV.own, dr = MV.dr;
+  var svgEl = MV.svgEl;
+
+  /*<<SCENE_JS>>*/
+
+  MV.start();
+})();
+</script>
+</body>
+</html>

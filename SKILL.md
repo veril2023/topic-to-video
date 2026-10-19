@@ -138,39 +138,92 @@ description: >-
 
 ---
 
-## 3. 一集的生命周期（15 步速查，详见 R5）
+## 3. 一集的生产线（可直接跑的命令）
 
-**开工先花 3 分钟把骨架铺好**：
+### 3.1 开工前：环境自检（30 秒，决定成败）
 
 ```bash
-EP=ep01_你的主题
-mkdir -p "$EP"
-cp templates/FACTS.template.md    "$EP/FACTS.md"
-cp templates/脚本骨架.template.md "$EP/脚本.md"
-python scripts/progress.py init "$EP" 01 "你的主题"
+python engine/selfcheck.py .
 ```
 
-> **每次续做（含新会话）第一件事**：`python scripts/progress.py show $EP`
-> 它会告诉你做到第几步、哪个门没过、`FACTS` 还有没有待补项。**不要把进度记在脑子里或聊天记录里。**
-> 图形化：`python scripts/progress.py html $EP` 生成 `PROGRESS.html` 看板。
+**这一步比后面所有步骤都重要。** 它检查 ffmpeg / Node / puppeteer-core / Chrome /
+中文字体 / TTS key / 写权限，并给出「能不能出片」的结论。
 
-| # | 步骤 | 门 |
-|---|---|---|
-| 1 | 选题分析（体检表 9 问） | QC-0 |
-| 2 | 观众 / 平台 / **结构**确认（输入契约 1–5） | — |
-| 3 | 单集目标定义（**先写结尾那句，再写开头**） | — |
-| 4 | 大纲（**选定结构的幕表** + 变体 + 落点型） | 结构不匹配 → 回步骤 2 |
-| 5 | 查重（钩子/变体/升维型/演示/赌注/文明） | QC-1 |
-| 6 | a 检索稿 + `FACTS.md`；b 改写稿 | QC-20 → QC-2 |
-| 7 | **开场三件套**：钩子 + 赌注句 + 拆字幕 | **QC-27 / QC-28** |
-| 8 | 分镜设计 → **分镜板 SVG** | QC-17 |
-| 9 | 素材预处理（AI 生成 + 后处理） | QC-15 / QC-18 |
-| 10 | 音频构建（三层声轨 + 片头 BGM 第四层） | QC-3 / QC-5 |
-| 11 | HTML 动画（句级驱动） | QC-4 / QC-11 / QC-13 |
-| 12 | probe → 全量渲染 → 编码 | QC-9 |
-| 13 | 质检门全跑 | QC-0~28 |
-| 14 | 逐帧验收 + 通俗化 + 空画面 + 重叠 + **体检** | QC-21/22/23/24/26 + **QC-29** |
-| 15 | 交付 + 归档 + 复盘回写 | QC-7 / QC-8 / QC-16 / QC-19 |
+任何一项 FAIL 都意味着后面必然卡住，先解决再往下。
+
+> **如果当前环境不能写文件、不能跑命令**（例如纯网页版对话），本技能**产不出 mp4**，
+> 只能交付脚本与分镜。此时应当直接告诉用户换用本地工具（Claude Code / Codex /
+> Qoder / Trae / Cursor 等），而不是继续往下写台词、让用户等一个拿不到的结果。
+
+### 3.2 铺骨架
+
+```bash
+cp brand.example.json brand.json     # 填系列名 / 主色 / logo（可选）
+python engine/sync_brand.py .        # 编译成 brand.css，全项目共用一份
+python engine/init_ep.py . 01 "你的主题"
+```
+
+`init_ep.py` 建出 `01_你的主题/standalone.html`，里面只有三个插槽：
+
+| 插槽 | 放什么 |
+|---|---|
+| `/*<<SCENE_CSS>>*/` | 本集画面元素的样式（位置、尺寸、字体） |
+| `<!--<<SCENE_HTML>>-->` | 本集画面元素的 DOM（每个镜头一个 `.el`） |
+| `/*<<SCENE_JS>>*/` | 本集动画：用 `MV.set/MV.vis` 把每个元素写成 t 的函数 |
+
+**画面代码是唯一需要你写的东西**，其余全部由 engine 提供。
+
+### 3.3 四条命令走完从台词到 mp4
+
+```bash
+EP=01_你的主题
+
+# ① 配音 + 句级时间轴
+#    TTS 一次一幕；句界从「真实语音的静音位置」反推，不是按字数估算
+python engine/build_audio.py "$EP"
+#    产出 audio/final_mix.mp3（三层混音）+ timeline.js（engine 的唯一数据源）
+
+# ② 填完三个插槽后，先抽帧看图，不要直接全量渲染
+node engine/render.js "$EP" probe 5 30 60 100
+
+# ③ 全量渲染（断点续渲：已存在的帧自动跳过，改完局部重渲用 --from/--to）
+node engine/render.js "$EP" full
+
+# ④ 字幕 + 合片 + 封面
+python engine/gen_srt.py "$EP"
+node engine/render.js "$EP" cover 7.0        # 无字幕封面原图（1080×1920）
+python engine/mux.py "$EP" --cover 7.0       # 裁成 3:4 并存 mp4
+```
+
+产出：`<系列名>-第NN集-<标题>.mp4`（1080×1920 / 24fps / H.264 / AAC）+ `.srt` + `封面候选.jpg`。
+
+> **顺序不能换**：必须先有配音再画画面。时间轴由真实语音的静音位置决定，
+> 先画后配音，每一句的起止都对不上，字幕和动画全部返工。
+
+### 3.4 十五步与门的对应
+
+| # | 步骤 | 谁做 | 门 |
+|---|---|---|---|
+| 0 | 环境自检 | `engine/selfcheck.py` | 有 FAIL 就停 |
+| 1 | 选题分析（体检表 9 问） | 人 + AI | QC-0 |
+| 2 | 观众 / 平台 / **结构**确认（输入契约 1–5） | AI 提问 | — |
+| 3 | 单集目标定义（**先写结尾那句，再写开头**） | AI | — |
+| 4 | 大纲（**选定结构的幕表** + 变体 + 落点型） | AI | 结构不匹配 → 回步骤 2 |
+| 5 | 查重（钩子/变体/升维型/演示/赌注/文明） | AI | QC-1 |
+| 6 | a 检索稿 + `FACTS.md`；b 改写稿 | AI | QC-20 → QC-2 |
+| 7 | **开场三件套**：钩子 + 赌注句 + 拆字幕 | AI | **QC-27 / QC-28** |
+| 8 | 分镜设计 → **分镜板 SVG** | AI | QC-17 |
+| 9 | 素材预处理（AI 生成 + 后处理） | AI | QC-15 / QC-18 |
+| 10 | 配音 + 时间轴 | `engine/build_audio.py` | QC-3 / QC-5 |
+| 11 | 填三个插槽（画面 + 动画） | AI | QC-4 / QC-11 / QC-13 |
+| 12 | 抽帧看图 → 全量渲染 | `engine/render.js` | QC-9 |
+| 13 | 质检门全跑 | `scripts/qc*.py` | QC-0~28 |
+| 14 | 逐帧验收 + 通俗化 + 空画面 + 重叠 + **体检** | AI + `scripts/epcheck.py` | QC-21/22/23/24/26 + **QC-29** |
+| 15 | 交付 + 归档 + 复盘回写 | `engine/mux.py` + `scripts/archive_flat.py` | QC-7 / QC-8 / QC-16 / QC-19 |
+
+> **续做（含新会话）第一件事**：`python scripts/progress.py show $EP`
+> 它会告诉你做到第几步、哪个门没过、`FACTS` 还有没有待补项。
+> 进度不要只记在聊天记录里。图形化看板：`python scripts/progress.py html $EP`。
 
 ---
 
@@ -251,8 +304,18 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 │   ├── README.md            #   路由规则 + 8 条不变量 + 结构 6 槽
 │   ├── seven-act.md         #   默认结构：七幕升维（已生产验证）
 │   └── _template.md         #   自建结构模板（含未验证示例）
+├── engine/                  # ★ 执行层（生产线，画面之外的一切）
+│   ├── selfcheck.py         #   环境自检：能不能出片
+│   ├── sync_brand.py        #   brand.json → brand.css
+│   ├── init_ep.py           #   建集骨架（三个插槽）
+│   ├── engine.js            #   时间轴驱动核心（seek 到任意 t 都是唯一状态）
+│   ├── standalone.template.html  # 骨架壳（安全区/字幕/角标）
+│   ├── build_audio.py       #   TTS + 静音反推句界 + 三层混音
+│   ├── render.js            #   逐帧渲染（probe / cover / full / resume）
+│   ├── gen_srt.py           #   外挂字幕
+│   └── mux.py               #   合片 + 3:4 封面
 ├── references/              # R1~R8 方法论文档
-├── scripts/                 # ★ 可直接运行的脚本（路径自适应）
+├── scripts/                 # ★ 验收门脚本（路径自适应）
 │   ├── epcheck.py           # 体检门 QC-29（14 项）
 │   ├── qc27_hooks.py        # 钩子密度门
 │   ├── qc28_subpacing.py    # 字幕节奏门
@@ -281,17 +344,24 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 
 ## 7. 环境（自适应）
 
-| 依赖 | 用途 | 说明 |
-|---|---|---|
-| Python 3.8+ | 跑 `scripts/*.py` | 需 `numpy` + `pillow` |
-| Node.js 18+ | 跑 `scripts/*.js` | 需 `puppeteer-core` 或 `playwright` |
-| Chrome / Chromium | 渲染 HTML 动画帧 | 脚本自动探测常见安装路径 |
-| ffmpeg / ffprobe | 音频处理、编码、体检 | 环境变量 `MEV_FFMPEG` / `MEV_FFPROBE` 可覆盖 |
-| TTS | 旁白合成 | 任意服务均可（MiniMax / Azure / ElevenLabs / 本地） |
-| 图生图 | AI 卡片素材 | 任意服务均可（可选） |
+**先跑 `python engine/selfcheck.py .`，它会逐项告诉你缺什么。** 下表是它检查的项目：
 
-> 所有脚本**不含硬编码绝对路径**。找不到 ffmpeg 时设置环境变量即可：
-> `export MEV_FFMPEG=/usr/local/bin/ffmpeg` `export MEV_FFPROBE=/usr/local/bin/ffprobe`
+| 依赖 | 用途 | 缺失后果 | 安装 |
+|---|---|---|---|
+| Python 3.8+ | 跑 `engine/*.py`、`scripts/*.py` | 全线不可用 | 内置 `json/re/urllib`，不依赖第三方包 |
+| Node.js 18+ | 跑 `render.js` | 无法渲染 | https://nodejs.org |
+| puppeteer-core | 驱动 Chrome | 无法渲染 | `npm i puppeteer-core` |
+| Chrome / Chromium | 逐帧截图 | 无法渲染 | 装 Chrome，或 `npx playwright install chromium` |
+| ffmpeg / ffprobe | 音频、混音、编码、体检 | 无法出片 | `winget install Gyan.FFmpeg` / `brew install ffmpeg` |
+| 中文字体 | 画面里的中文 | 显示方框 | Linux: `fonts-noto-cjk`；Win/mac 自带 |
+| TTS key | 旁白合成 | 只能 `--no-tts` 复用已有音频 | MiniMax / 任意 TTS |
+
+环境变量覆盖：`MEV_FFMPEG` `MEV_FFPROBE` `MEV_CHROME` `MEV_FPS` `MEV_PORT` `MEV_CDP`
+`MINIMAX_API_KEY`。所有脚本**不含硬编码绝对路径**。
+
+> **渲染为什么必须用 Chrome**：动画不是视频文件，是一个能用 `seek(t)` 精确跳到
+> 任意时刻的 HTML 页面。渲染器逐帧 seek 再截图，所以第 N 帧严格等于 t=N/fps 的画面，
+> 也才能随时断点续渲、单独抽某一帧检查。
 
 ---
 

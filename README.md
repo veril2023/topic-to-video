@@ -91,25 +91,44 @@ structures/
 
 > 只要模型能读长文 + 能写代码，就能跑。脚本可选（它是给会用命令行的人加速用的）。
 
-### 方式 B：Clone 仓库跑流水线（最完整）
+### 方式 B：Clone 仓库跑流水线（最完整，能直接出 mp4）
 
 ```bash
 git clone <repo-url>
 cd vertical-explainer-video
-
-pip install numpy pillow
 npm install puppeteer-core
 
-# 开新集
-EP=ep01_你的主题
-mkdir -p "$EP"
-cp templates/FACTS.template.md    "$EP/FACTS.md"
-cp templates/脚本骨架.template.md "$EP/脚本.md"
-python scripts/progress.py init "$EP" 01 "你的主题"
+# 0) 先自检：这台机器能不能真的出片
+python engine/selfcheck.py .
 
-# 随时看进度
-python scripts/progress.py show "$EP"
-python scripts/progress.py html "$EP"     # 生成可视化看板
+# 1) 品牌 + 开集
+cp brand.example.json brand.json      # 填系列名/主色（可选）
+python engine/sync_brand.py .
+python engine/init_ep.py . 01 "你的主题"
+
+# 2) 写台词 → 配音 + 句级时间轴
+python engine/build_audio.py 01_你的主题
+
+# 3) 填 standalone.html 的三个插槽（画面），然后抽帧看
+node engine/render.js 01_你的主题 probe 5 30 60 100
+
+# 4) 全量渲染（断点续渲，已存在的帧自动跳过）
+node engine/render.js 01_你的主题 full
+
+# 5) 字幕 + 封面 + 合片
+python engine/gen_srt.py 01_你的主题
+node engine/render.js 01_你的主题 cover 7.0
+python engine/mux.py 01_你的主题 --cover 7.0
+```
+
+**只有第 3 步需要创作** —— 也就是"这一集画什么、什么时候动"。其余全部是命令。
+
+进度台账可选：
+
+```bash
+python scripts/progress.py init 01_你的主题 01 "你的主题"
+python scripts/progress.py show 01_你的主题
+python scripts/progress.py html 01_你的主题     # 可视化看板
 ```
 
 ### 方式 C：按需查方法论（最灵活）
@@ -127,14 +146,36 @@ python scripts/progress.py html "$EP"     # 生成可视化看板
 
 ## 环境准备
 
+**先运行 `python engine/selfcheck.py .`**，它会逐项检测并给出结论。
+
 | 依赖 | 版本 | 用途 | 必须 |
 |---|---|---|---|
-| Python | 3.8+ | `scripts/*.py`（numpy + pillow） | ✅ |
-| Node.js | 18+ | `scripts/*.js`（Chrome 渲染） | ✅ |
-| Chrome / Chromium | 最新 | 渲染逐帧画面 | ✅ |
-| ffmpeg / ffprobe | 最新 | 音频处理、编码、体检 | ✅ |
-| TTS 服务 | — | 旁白合成 | 可选 |
+| Python | 3.8+ | `engine/*.py`、`scripts/*.py`（无第三方依赖） | ✅ |
+| Node.js | 18+ | `engine/render.js`（驱动 Chrome 逐帧截图） | ✅ |
+| puppeteer-core | 最新 | Node 侧控制 Chrome | ✅ |
+| Chrome / Chromium | 最新 | 把 HTML 画面渲成帧 | ✅ |
+| ffmpeg / ffprobe | 最新 | 音频、混音、编码、体检 | ✅ |
+| 中文字体 | — | 画面里的中文（Linux 需装 CJK 字体） | ✅ |
+| TTS 服务 | — | 旁白合成（默认适配 MiniMax，也可换） | 可选 |
 | 图生图服务 | — | AI 卡片素材 | 可选 |
+
+安装命令：
+
+```bash
+# puppeteer-core
+npm install puppeteer-core
+
+# ffmpeg
+#   Windows: winget install Gyan.FFmpeg
+#   macOS:   brew install ffmpeg
+#   Linux:   sudo apt install ffmpeg fonts-noto-cjk
+
+# Chromium（没装 Chrome 时）
+npx playwright install chromium
+```
+
+> **为什么必须能用命令行**：本技能不是纯文档包，它要真的渲染视频。
+> 只有网页版对话（不能写文件、不能跑命令）的环境**产不出 mp4**，只能给脚本与分镜。
 
 ```bash
 pip install numpy pillow
@@ -197,6 +238,16 @@ vertical-explainer-video/
 ├── LICENSE
 ├── .gitignore
 ├── brand.example.json            # 品牌配置示例
+├── engine/                       # ★ 执行层：画面之外的一切，开箱即跑
+│   ├── selfcheck.py              #   环境自检（能不能出片）
+│   ├── sync_brand.py             #   brand.json → brand.css
+│   ├── init_ep.py                #   建集骨架（三个插槽）
+│   ├── engine.js                 #   时间轴驱动核心
+│   ├── standalone.template.html  #   骨架壳（安全区/字幕/角标）
+│   ├── build_audio.py            #   TTS + 静音反推句界 + 三层混音
+│   ├── render.js                 #   逐帧渲染（probe/cover/full/resume）
+│   ├── gen_srt.py                #   外挂字幕
+│   └── mux.py                    #   合片 + 3:4 封面
 ├── structures/                   # ★ 结构插槽（幕怎么排）
 │   ├── README.md                 #   路由规则 + 8 条不变量 + 结构 6 槽
 │   ├── seven-act.md              #   默认：七幕升维（已生产验证）
