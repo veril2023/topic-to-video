@@ -18,7 +18,9 @@ description: >-
   不跑这一步就开始写内容，视为违反本技能。
 ---
 
-# 竖屏知识科普短视频生产技能 · v1.0
+# 竖屏知识科普短视频生产技能 · v1.1.0
+
+> 改了什么见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 > **输入一个主题，输出一条能留住人的竖屏知识短片。**
 > 本仓库只提供**方法与工具**（结构、判据、脚本、模板），不提供任何现成选题或素材——
@@ -486,7 +488,7 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 │   ├── render.js            #   逐帧渲染（probe / cover / full / resume）
 │   ├── gen_srt.py           #   外挂字幕
 │   └── mux.py               #   合片 + 3:4 封面
-├── references/              # R1~R8 方法论文档
+├── references/              # R1~R10 方法论文档
 ├── scripts/                 # ★ 验收门脚本（路径自适应）
 │   ├── gate0.py             # ★ 主题闸门（第一动作，先跑它）
 │   ├── epcheck.py           # 体检门 QC-29（14 项）
@@ -497,7 +499,7 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 │   ├── progress.py          # 15 步进度（show/done/gate/html 看板）
 │   └── archive_flat.py      # 平铺归档 + sha256 回读 + MANIFEST
 ├── templates/               # 新集开工模板
-└── assets/                  # 可选图形质检工具（小红书九图用）
+└── extras/                  # 与本流程无关的可选工具（小红书九图质检），不装也能出片
 ```
 
 **项目侧目录（你做视频时才建，不属于本技能包）**：

@@ -6,6 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-18+-green.svg)](https://nodejs.org/)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
 
 ---
 
@@ -17,6 +18,7 @@
 - [三种使用方式](#三种使用方式)
 - [环境准备](#环境准备)
 - [快速开始](#快速开始)
+- [下载下来先跑一遍自测](#下载下来先跑一遍自测)
 - [目录结构](#目录结构)
 - [脚本参考](#脚本参考)
 - [常见问题](#常见问题)
@@ -230,7 +232,7 @@ pip install edge-tts
 > 只有网页版对话（不能写文件、不能跑命令）的环境**产不出 mp4**，只能给脚本与分镜。
 
 ```bash
-# 可选：只有用 assets/ 里的小红书九图脚本才需要（主流程不用）
+# 可选：只有用 extras/ 里的小红书九图脚本才需要（主流程不用）
 pip install numpy pillow
 ```
 
@@ -281,14 +283,37 @@ MEV_DST=/your/archive python scripts/archive_flat.py
 
 ---
 
+## 下载下来先跑一遍自测
+
+```bash
+python scripts/smoke_test.py
+```
+
+11 项检查，**不需要 ffmpeg、不需要 Chrome、不需要任何 TTS**，所以在一台刚 clone 下来
+什么都没装的机器上也能跑。它验的是零件：四个门的输入路由对不对、骨架建出来是不是七幕、
+品牌配置能不能编译、有没有危险调用、文档里的路径有没有死链。
+
+跑完看到 `11 项检查，11 通过` 说明**代码是好的**，接下来缺什么就看环境自检：
+
+```bash
+python engine/selfcheck.py      # 缺什么、怎么装，它直接告诉你命令
+```
+
+> 分工：`smoke_test.py` 管「代码对不对」，`selfcheck.py` 管「这台机器能不能出片」。
+> 两个都过了才动手做第一集。
+
+---
+
 ## 目录结构
 
 ```
 topic-to-video/
 ├── SKILL.md                      # 技能入口（可当提示词）
 ├── README.md                     # 本文件
+├── CHANGELOG.md                  # 改了什么
 ├── LICENSE
 ├── .gitignore
+├── .gitattributes                # 统一 LF，消掉 Windows 换行噪声
 ├── brand.example.json            # 品牌配置示例
 ├── engine/                       # ★ 执行层：画面之外的一切，开箱即跑
 │   ├── selfcheck.py              #   环境自检（能不能出片）
@@ -313,7 +338,9 @@ topic-to-video/
 │   ├── R5-生产流程.md             # 15 步 / 渲染 / 引擎契约
 │   ├── R6-经验库.md               # 现象 → 根因 → 规则
 │   ├── R7-小红书图文.md           # 9 图规范
-│   └── R8-技能维护指南.md         # 改技能前必读
+│   ├── R8-技能维护指南.md         # 改技能前必读
+│   ├── R9-系列规划.md             # 一本书 → N 集：诘问 / 切法 / 季编排
+│   └── R10-适用边界.md            # A/B/C/D 五级：该接什么、该拒什么
 ├── scripts/
 │   ├── epcheck.py                # 体检门（14 项）
 │   ├── qc27_hooks.py             # 钩子密度
@@ -327,9 +354,9 @@ topic-to-video/
 │   ├── 脚本骨架.template.md      # 脚本骨架（幕表按选定结构）
 │   ├── PROGRESS.template.json    # 进度模板
 │   └── README.md
-└── assets/
-    ├── qc_xhs.js                 # 九图版式质检
-    └── xhs_center.py             # 九图重心测量
+└── extras/                       # 与本流程无关的可选工具，不装也能出片
+    ├── qc_xhs.js                 #   九图版式质检
+    └── xhs_center.py             #   九图重心测量
 ```
 
 ---
@@ -339,6 +366,7 @@ topic-to-video/
 | 脚本 | 干什么 | 典型用法 |
 |---|---|---|
 | `gate0.py` | **主题闸门**：颗粒度 + 风险词初筛 + 三问表 + 契约表 + 开工/拒绝结论 | `python scripts/gate0.py "帮我按《数学之美》做系列"` |
+| `smoke_test.py` | **自测**：11 项，不依赖 ffmpeg / Chrome / TTS | `python scripts/smoke_test.py` |
 | `epcheck.py` | 14 项格式体检（音画时长/字幕/BGM/黑帧/编码/封面…） | `python scripts/epcheck.py ep01_xxx` |
 | `progress.py` | 15 步进度 + 门禁 + HTML 看板 | `python scripts/progress.py show ep01_xxx` |
 | `qc27_hooks.py` | 钩子密度（最长空窗 ≤25s、前 30s ≥1 问、3s 内赌注句） | `python scripts/qc27_hooks.py timeline.js` |
@@ -367,7 +395,7 @@ A：**画面完全不需要任何付费服务；配音可以免费。整套流�
 | 画面资产 | 怎么来 | 要付费 API 吗 |
 |---|---|---|
 | **L1** 图形 / 图式 / 符号（**默认首选**，SYM/SCHEMA 镜型强制 L1） | 手写 SVG | ❌ 不要 |
-| **L2** 人物 / 场景（只以圆角卡片出现，可选） | 任何图生图工具出 PNG，丢进 `assets/` | 可不用 |
+| **L2** 人物 / 场景（只以圆角卡片出现，可选） | 任何图生图工具出 PNG，丢进**你自己集目录下的 `assets/`**（不是本仓库的 `extras/`） | 可不用 |
 | **L3** 动态氛围（人 / 火 / 烟 / 水 / 云 / 光尘，可选） | 任何视频生成模型 | 可不用 |
 | **L4** 实景照片 | **默认禁用** | — |
 

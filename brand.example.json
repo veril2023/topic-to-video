@@ -50,7 +50,7 @@
   "_notes": {
     "allow_real_photos": "默认 false。改成 true 需同时把禁用实景照片的红线（SKILL.md §2 第 1 条）在发布文档中说明。",
     "logo_svg_file": "可选。留空则用程序绘制的中性几何角标。本仓库不附带任何现成 logo 本体，需自备。"
-    ,"accent": "若把主色改成非暖色（蓝/绿），assets/xhs_center.py 里的暖色重心判定（r>140 且 r-b>40）需要同步调，否则九图居中会算偏。"
+    ,"accent": "若把主色改成非暖色（蓝/绿），extras/xhs_center.py 里的暖色重心判定（r>140 且 r-b>40）需要同步调，否则九图居中会算偏。"
     ,"tts": "provider 四选一：minimax（需 key）/ edge（免费，pip install edge-tts）/ custom（改 engine/tts_custom.py）/ none（不合成，要求 audio/scene_N.mp3 已存在）。voice 留空 = 用该后端的默认音色；要指定就填对应后端的名字（edge 形如 zh-CN-YunxiNeural，minimax 形如 male-qn-jingying），两家的 id 不通用。其余数值等同于 engine/build_audio.py 里的代码默认值，删掉或写成空对象行为不变。"
   }
 }

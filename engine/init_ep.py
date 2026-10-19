@@ -21,6 +21,49 @@ import re
 import shutil
 import sys
 
+SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _template_path(root):
+    """模板跟着技能包走，不跟项目根走。
+
+    以前这里取 root/engine/standalone.template.html，于是把项目建在仓库外面
+    （`init_ep.py /my/videos 01 ...`）就直接 FileNotFoundError 甩一屏堆栈——
+    而用户完全有权把集建在仓库外。先找技能包自带的，再退回项目根，
+    两条都没有才报错，并说清该复制哪个文件。
+    """
+    for d in (SKILL_DIR, root):
+        p = os.path.join(d, 'engine', 'standalone.template.html')
+        if os.path.isfile(p):
+            return p
+    print('找不到 engine/standalone.template.html。\n'
+          '  它是技能包的一部分，应该在 %s/engine/ 下。\n'
+          '  如果你把 engine/ 复制到了别处，请一并复制这个模板。'
+          % SKILL_DIR)
+    sys.exit(3)
+
+
+def _engine_href(root, ep_dir):
+    """算出集目录到 engine.js 的相对路径。
+
+    standalone.html 是用浏览器 / file:// 打开的，路径必须是相对它自己的。
+    项目根 == 技能包根时结果就是 '../engine/engine.js'；项目建在别处时
+    （Windows 上还可能跨盘，relpath 会抛异常）就退回项目根那条，
+    同时明确告知要把 engine/ 放到项目根下。
+    """
+    target = os.path.join(root, 'engine', 'engine.js')
+    if not os.path.isfile(target):
+        target = os.path.join(SKILL_DIR, 'engine', 'engine.js')
+    try:
+        rel = os.path.relpath(target, ep_dir)
+    except ValueError:                       # Windows 跨盘符
+        rel = None
+    if rel is None or rel.startswith('..' + os.sep + '..'):
+        print('注意：集目录不在技能包内，engine.js 用绝对定位可能加载不到。\n'
+              '  请把技能包的 engine/ 目录复制到项目根：%s\n'
+              '  复制后本提示可忽略（路径会自然指过去）。' % root)
+    return (rel or '../engine/engine.js').replace(os.sep, '/')
+
 
 def main():
     if len(sys.argv) < 4:
@@ -44,14 +87,16 @@ def main():
     ep_dir = os.path.join(root, '%s_%s' % (ep_no, safe))
     os.makedirs(ep_dir, exist_ok=True)
 
-    tpl_path = os.path.join(root, 'engine', 'standalone.template.html')
+    tpl_path = _template_path(root)
     tpl = io.open(tpl_path, encoding='utf-8').read()
+    # 资源路径统一指到项目根，避免每集复制一份 engine/brand.css 造成多副本漂移。
+    # engine.js 例外：它住在技能包里，不一定在项目根下（用户可以把集建在仓库外）。
+    _eng_rel = _engine_href(root, ep_dir)
     html = (tpl.replace('{{SERIES_NAME}}', series)
                .replace('{{EP_NO}}', ep_no)
                .replace('<!--<<BUG_SVG>>-->', mark)
-               # 资源路径统一指到项目根，避免每集复制一份 engine/brand.css 造成多副本漂移
                .replace('href="brand.css"', 'href="../brand.css"')
-               .replace('src="engine.js"', 'src="../engine/engine.js"'))
+               .replace('src="engine.js"', 'src="%s"' % _eng_rel))
     io.open(os.path.join(ep_dir, 'standalone.html'), 'w', encoding='utf-8', newline='\n').write(html)
 
     # 台词结构模板：scene / sentences 是 build_audio.py 的唯一输入。
