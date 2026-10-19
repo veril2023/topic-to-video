@@ -118,15 +118,15 @@ TPL = """<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <title>__TITLE__</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:linear-gradient(180deg,#0D1118,#1A2130);color:#F5F0E6;
+body{background:linear-gradient(180deg,#0E1016,#1B2028);color:#F2F0EA;
  font-family:"Microsoft YaHei",system-ui,sans-serif;min-height:100vh;padding:40px 32px}
 .wrap{max-width:860px;margin:0 auto}
 h1{font-size:28px;font-weight:600;letter-spacing:.02em}
-h1 em{font-style:normal;color:#E8A33D}
+h1 em{font-style:normal;color:#E0A44B}
 .meta{margin-top:10px;color:rgba(245,240,230,.55);font-size:14px;line-height:1.9}
-.meta b{color:#E8A33D;font-weight:500}
+.meta b{color:#E0A44B;font-weight:500}
 .bar{margin:26px 0 8px;height:10px;background:rgba(245,240,230,.10);border-radius:5px;overflow:hidden}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,#E8A33D,#F2B75E);border-radius:5px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#E0A44B,#EDBE6A);border-radius:5px}
 .pct{font-size:13px;color:rgba(245,240,230,.55)}
 ul{list-style:none;margin-top:26px}
 li{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;
@@ -134,27 +134,27 @@ li{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;
 li i{font-style:normal;width:16px;text-align:center;color:rgba(245,240,230,.35)}
 li b{font-weight:500;color:rgba(245,240,230,.45);width:22px;font-size:13px}
 li .t{flex:1}
-li .g{font-size:11px;color:#E8A33D;border:1px solid rgba(232,163,61,.4);
+li .g{font-size:11px;color:#E0A44B;border:1px solid rgba(224,164,75,.4);
  border-radius:20px;padding:2px 9px;white-space:nowrap}
 li .n{font-size:12px;color:rgba(245,240,230,.45);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-li.done{border-color:rgba(232,163,61,.45);background:rgba(232,163,61,.10)}
-li.done i{color:#E8A33D}
+li.done{border-color:rgba(224,164,75,.45);background:rgba(224,164,75,.10)}
+li.done i{color:#E0A44B}
 li.done .t{color:rgba(245,240,230,.65)}
-li.in_progress{border-color:rgba(63,169,140,.5);background:rgba(63,169,140,.10)}
-li.in_progress i{color:#3FA98C}
+li.in_progress{border-color:rgba(78,143,166,.5);background:rgba(78,143,166,.10)}
+li.in_progress i{color:#4E8FA6}
 li.blocked{border-color:rgba(226,75,74,.5);background:rgba(226,75,74,.10)}
 li.blocked i{color:#E24B4A}
 .gates{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
 .badge{font-size:13px;padding:6px 14px;border-radius:20px;border:1px solid rgba(245,240,230,.16);color:rgba(245,240,230,.6)}
-.badge.ok{color:#3FA98C;border-color:rgba(63,169,140,.55);background:rgba(63,169,140,.10)}
+.badge.ok{color:#4E8FA6;border-color:rgba(78,143,166,.55);background:rgba(78,143,166,.10)}
 .badge.bad{color:#E24B4A;border-color:rgba(226,75,74,.55);background:rgba(226,75,74,.10)}
 .foot{margin-top:34px;font-size:12px;color:rgba(245,240,230,.35);line-height:1.9}
-.warn{margin-top:20px;padding:12px 16px;border-left:3px solid #E8A33D;
- background:rgba(232,163,61,.08);font-size:14px;color:#F2B75E;border-radius:0 6px 6px 0}
+.warn{margin-top:20px;padding:12px 16px;border-left:3px solid #E0A44B;
+ background:rgba(224,164,75,.08);font-size:14px;color:#EDBE6A;border-radius:0 6px 6px 0}
 </style></head><body><div class="wrap">
 <h1>__EP__ <em>《__NAME__》</em></h1>
 <div class="meta">结构 <b>__ST__</b> ｜ 变体 <b>__VARIANT__</b> ｜ 升维 <b>__DIM__</b> ｜ 开始 __START__ ｜ 更新 __UPD__<br>
-母题比分 <b>__S1__</b> → <b>__S2__</b></div>
+比分 <b>__S1__</b> → <b>__S2__</b></div>
 <div class="bar"><i style="width:__PCT__%"></i></div>
 <div class="pct">进度 __DONE__ / __TOTAL__（__PCT__%）</div>
 __WARN__

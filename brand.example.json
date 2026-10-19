@@ -1,5 +1,5 @@
 {
-  "_comment": "复制为 brand.json 后填写。不填也有默认值（深蓝灰渐变 + 琥珀 accent）。",
+  "_comment": "复制为 brand.json 后填写。下面的色值是演示用示例色板（深色底 + 单个暖色主色），请换成你自己的。",
   "series_name": "你的系列名",
   "series_name_en": "YOUR SERIES",
   "slogan": "一句不超过 12 字的口号",
@@ -7,12 +7,12 @@
   "motif_side_a": "A",
   "motif_side_b": "B",
   "episode_prefix": "EP",
-  "accent": "#E8A33D",
-  "accent_alt": "#3FA98C",
-  "bg_gradient": ["#0D1118", "#1A2130"],
-  "card_face": "#141824",
-  "text_primary": "#F5F0E6",
-  "text_secondary": "rgba(245,240,230,.55)",
+  "accent": "#E0A44B",
+  "accent_alt": "#4E8FA6",
+  "bg_gradient": ["#0E1016", "#1B2028"],
+  "card_face": "#151A22",
+  "text_primary": "#F2F0EA",
+  "text_secondary": "rgba(242,240,234,.55)",
   "logo_svg_file": "",
   "corner_mark": {
     "logo_px": 57,
@@ -36,6 +36,7 @@
   "allow_real_photos": false,
   "_notes": {
     "allow_real_photos": "默认 false。改成 true 需同时把禁用实景照片的红线（SKILL.md §2 第 1 条）在发布文档中说明。",
-    "logo_svg_file": "可选。留空则用程序绘制的中性几何角标。"
+    "logo_svg_file": "可选。留空则用程序绘制的中性几何角标。本仓库不附带任何现成 logo 本体，需自备。"
+    ,"accent": "若把主色改成非暖色（蓝/绿），assets/xhs_center.py 里的暖色重心判定（r>140 且 r-b>40）需要同步调，否则九图居中会算偏。"
   }
 }

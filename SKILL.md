@@ -319,15 +319,15 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 {
   "series_name": "你的系列名",
   "slogan": "一句口号",
-  "accent": "#E8A33D",
-  "bg_gradient": ["#0D1118", "#1A2130"],
+  "accent": "#E0A44B",
+  "bg_gradient": ["#0E1016", "#1B2028"],
   "logo_svg": "<svg>…</svg>",
   "motif_question": "X 是 A 还是 B？",
   "episode_prefix": "ep"
 }
 ```
 
-> 不填也能跑：R2 里有一套中性默认值（深蓝灰渐变 + 琥珀 accent）。
+> 不填也能跑：R2 里有一套中性默认值（深色渐变 + 单一暖色主色 accent）。**本仓库不附带任何现成 logo 本体**。
 > 品牌配置只影响**视觉上层**，不影响任何方法或判据。
 
 ---

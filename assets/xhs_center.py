@@ -35,7 +35,7 @@ def analyze(path):
         n = 0
         for r, g, b in line:
             lum = (r * 299 + g * 587 + b * 114) // 1000
-            warm = r > 140 and (r - b) > 40 and (r - g) > 15   # 琥珀金
+            warm = r > 140 and (r - b) > 40 and (r - g) > 15   # 暖色主色（换非暖色主色时需改这行）
             bright = lum > 165                                 # 骨白 / 浅色字
             if warm or bright:
                 n += 1
