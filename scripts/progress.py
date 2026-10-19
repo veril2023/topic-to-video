@@ -60,9 +60,9 @@ def cmd_init(d, ep, title):
 def cmd_show(d):
     t = load(d)
     print('=' * 64)
-    print('ep%s《%s》  变体 %s  升维 %s  开始 %s'
-          % (t['ep'], t['title'], t.get('variant', '?'),
-             t.get('dimension', '?'), t.get('started', '?')))
+    print('ep%s《%s》  结构 %s  变体 %s  升维 %s  开始 %s'
+          % (t['ep'], t['title'], t.get('structure', 'seven-act'),
+             t.get('variant', '?'), t.get('dimension', '?'), t.get('started', '?')))
     print('比分 %s → %s' % (t.get('score_before') or '?', t.get('score_after') or '（未结算）'))
     print('-' * 64)
     for s in t['steps']:
@@ -153,7 +153,7 @@ li.blocked i{color:#E24B4A}
  background:rgba(232,163,61,.08);font-size:14px;color:#F2B75E;border-radius:0 6px 6px 0}
 </style></head><body><div class="wrap">
 <h1>__EP__ <em>《__NAME__》</em></h1>
-<div class="meta">变体 <b>__VARIANT__</b> ｜ 升维 <b>__DIM__</b> ｜ 开始 __START__ ｜ 更新 __UPD__<br>
+<div class="meta">结构 <b>__ST__</b> ｜ 变体 <b>__VARIANT__</b> ｜ 升维 <b>__DIM__</b> ｜ 开始 __START__ ｜ 更新 __UPD__<br>
 母题比分 <b>__S1__</b> → <b>__S2__</b></div>
 <div class="bar"><i style="width:__PCT__%"></i></div>
 <div class="pct">进度 __DONE__ / __TOTAL__（__PCT__%）</div>
@@ -195,6 +195,7 @@ def cmd_html(d, out):
     html = (TPL.replace('__TITLE__', 'ep%s %s' % (t['ep'], t['title']))
                .replace('__EP__', 'ep%s' % t['ep'])
                .replace('__NAME__', t['title'])
+               .replace('__ST__', str(t.get('structure') or 'seven-act'))
                .replace('__VARIANT__', str(t.get('variant') or '—'))
                .replace('__DIM__', str(t.get('dimension') or '—'))
                .replace('__START__', str(t.get('started') or '—'))
