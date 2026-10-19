@@ -273,6 +273,8 @@ EP=01_你的主题
 # ① 配音 + 句级时间轴
 #    TTS 一次一幕；句界从「真实语音的静音位置」反推，不是按字数估算
 python engine/build_audio.py "$EP"
+#    没有 MiniMax key？换免费后端（pip install edge-tts 后）：
+#    python engine/build_audio.py "$EP" --provider edge
 #    产出 audio/final_mix.mp3（三层混音）+ timeline.js（engine 的唯一数据源）
 
 # ② 填完三个插槽后，先抽帧看图，不要直接全量渲染
@@ -447,7 +449,7 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 | Chrome / Chromium | 逐帧截图 | 无法渲染 | 装 Chrome，或 `npx playwright install chromium` |
 | ffmpeg / ffprobe | 音频、混音、编码、体检 | 无法出片 | `winget install Gyan.FFmpeg` / `brew install ffmpeg` |
 | 中文字体 | 画面里的中文 | 显示方框 | Linux: `fonts-noto-cjk`；Win/mac 自带 |
-| TTS key | 旁白合成 | 只能 `--no-tts` 复用已有音频 | MiniMax（`MINIMAX_API_KEY`）；或用任意 TTS 离线生成 `audio/scene_N.mp3` 后 `--no-tts` |
+| 配音后端 | 旁白合成 | 只能 `--no-tts` 复用已有音频 | **`edge` 免费**（`pip install edge-tts`，无需 key）／ `minimax`（`MINIMAX_API_KEY`）／ `none` |
 
 环境变量覆盖：`MEV_FFMPEG` `MEV_FFPROBE` `MEV_CHROME` `MEV_FPS` `MEV_PORT` `MEV_CDP`
 `MINIMAX_API_KEY`。所有脚本**不含硬编码绝对路径**。

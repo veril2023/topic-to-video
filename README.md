@@ -205,8 +205,8 @@ python scripts/progress.py html 01_你的主题     # 可视化看板
 | Chrome / Chromium | 最新 | 把 HTML 画面渲成帧 | ✅ |
 | ffmpeg / ffprobe | 最新 | 音频、混音、编码、体检 | ✅ |
 | 中文字体 | — | 画面里的中文（Linux 需装 CJK 字体） | ✅ |
-| TTS 服务 | — | 旁白合成（默认适配 MiniMax，也可换） | 可选 |
-| 图生图服务 | — | AI 卡片素材 | 可选 |
+| 配音后端 | — | 旁白合成。`edge` 免费无需 key；`minimax` 需 key | 二选一 |
+| 图生图服务 | — | 只有 L2/L3 可选素材才用，默认 L1 SVG 不需要 | ❌ 不需要 |
 
 安装命令：
 
@@ -221,6 +221,9 @@ npm install puppeteer-core
 
 # Chromium（没装 Chrome 时）
 npx playwright install chromium
+
+# 免费配音（想用 edge 后端时；用 MiniMax 则不需要）
+pip install edge-tts
 ```
 
 > **为什么必须能用命令行**：本技能不是纯文档包，它要真的渲染视频。
@@ -353,25 +356,50 @@ A：没有。只有方法、判据、脚本、模板。选题由你给。
 **Q：我不写代码，能用吗？**
 A：能。把 `SKILL.md` 当提示词喂给 AI 就行；脚本是加速器，不是必需品。
 
-**Q：一定要用 MiniMax / Agnes 这些服务吗？**
+**Q：一定要用 MiniMax / Agnes 这些服务吗？要自己接 API 吗？**
 
-A：不，但**图生图和配音要分开看**，两者的"换"成本完全不同：
+A：**画面完全不需要任何付费服务；配音可以免费。整套流程零 API 成本就能跑完。**
 
-- **图生图（Agnes 等）**：脚本里根本没有调用代码，图片就是本地文件。
-  你用什么工具生成都行，放进 `assets/` 即可，**零成本替换**。
-- **配音（TTS）**：`engine/build_audio.py` 里的 `tts_one()` 目前**硬编码**了 MiniMax 的
-  `/v1/t2a_v2` 接口和请求体格式。换服务有两条路：
+**先看画面。** 这个技能的画面是**代码画出来的**——`engine/standalone.template.html` 里三个插槽
+填的就是内联 SVG 和 DOM。整个 `engine/` 目录里**没有任何生图 API 调用**（可以自己 grep 验证）：
 
-  | 做法 | 要不要改代码 | 推荐度 |
-  |---|---|---|
-  | 用任何工具（剪映朗读 / Azure / ElevenLabs / CosyVoice / 其它任何 API）**离线**生成 `audio/scene_1.mp3`、`scene_2.mp3`……再跑 `python engine/build_audio.py <集目录> --no-tts` | 不改 | ⭐ 首选 |
-  | 改 `tts_one()` 里的 URL 和 payload，适配目标服务的接口 | 要改 | 想长期用某家再考虑 |
+| 画面资产 | 怎么来 | 要付费 API 吗 |
+|---|---|---|
+| **L1** 图形 / 图式 / 符号（**默认首选**，SYM/SCHEMA 镜型强制 L1） | 手写 SVG | ❌ 不要 |
+| **L2** 人物 / 场景（只以圆角卡片出现，可选） | 任何图生图工具出 PNG，丢进 `assets/` | 可不用 |
+| **L3** 动态氛围（人 / 火 / 烟 / 水 / 云 / 光尘，可选） | 任何视频生成模型 | 可不用 |
+| **L4** 实景照片 | **默认禁用** | — |
 
-  **为什么必须是"每幕一个 mp3"而不是一句一个**：下一句的起止时间是靠 `silencedetect`
-  从真实音频的静音位置反推出来的（DP 选最优切分），所以只要音频本身是正常朗读，
-  哪家 TTS 生成的都能用。
+也就是说：**一集视频可以只用 SVG 画完，一分钱不花。** L2/L3 是锦上添花，不是门槛。
 
-  没有 key 时 `--no-tts` 就是官方逃生通道；`engine/selfcheck.py` 里 TTS key 只报 WARN 不报 FAIL。
+**再看配音。** `build_audio.py` 支持三个后端，前两个都能零成本跑通：
+
+| `tts.provider` | 成本 | 需要什么 |
+|---|---|---|
+| `edge` | **免费** | `pip install edge-tts`。微软 Edge 的语音服务，**不需要任何 key** |
+| `minimax` | 按量计费 | `MINIMAX_API_KEY` 环境变量，或 `minimax_key.txt` |
+| `none` | — | 自己生成 `audio/scene_N.mp3`，跳过合成只算时间轴 |
+
+用免费的 `edge` 就一行：
+
+```bash
+pip install edge-tts
+python engine/build_audio.py 01_你的主题 --provider edge
+# 默认音色 zh-CN-YunxiNeural（男声），可换 zh-CN-XiaoxiaoNeural 等
+```
+
+想固化到配置里：`brand.json` 写 `"tts": {"provider": "edge", "voice": "zh-CN-YunxiNeural"}`。
+
+> **换 TTS 为什么不影响画面对齐**：每句话的起止时间是从**真实音频的静音位置**反推出来的
+> （`silencedetect` 找静音 + DP 选最优切分），不依赖任何引擎的字级时间戳。
+> 所以只要音频是正常朗读，换哪家都一样。
+>
+> **验收过的**：`edge` 后端在本机完整跑通一集 4 幕 7 句（`audio/scene_N.mp3` ×4、
+> `final_mix.mp3`、`subtitles.json`、`timeline.js` 全部生成，总长 20.99s）；
+> `minimax` 无 key 时打印四条出路后退出、`--no-tts` 复用路径正常。
+
+**Q：那什么时候才需要付费 API？**
+A：只有两种情况：① 你想用 MiniMax 的音色（音质更好、可克隆）；② 你想给某几拍配 AI 生成的人物或氛围画面。**两者都不是必需的。**
 
 **Q：macOS / Linux 能跑吗？**
 A：能。所有脚本用 `os.path` 拼路径，Chrome 与 ffmpeg 都是跨平台探测。

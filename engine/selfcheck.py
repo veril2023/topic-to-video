@@ -141,7 +141,7 @@ def main():
         add(OK if n else WARN, '中文字体',
             '%d 个中文字体' % n if n else '未检测到中文字体，画面里的中文会变成方框。装：sudo apt install fonts-noto-cjk')
 
-    # ---- 7. TTS key ----
+    # ---- 7. 配音后端（两条路，有一条通就能出片）----
     key = os.environ.get('MINIMAX_API_KEY')
     src = '环境变量 MINIMAX_API_KEY'
     if not key:
@@ -150,8 +150,25 @@ def main():
                 key = io.open(p, encoding='utf-8').read().strip()
                 src = p
                 break
-    add(OK if key else WARN, 'TTS key（MiniMax）',
-        ('已配置：' + src) if key else '未配置 —— 无法生成配音。可先用 --no-tts 复用已有音频，或改用其它 TTS 后手动放 audio/scene_N.mp3')
+
+    edge_ok = False
+    try:
+        import importlib.util
+        edge_ok = importlib.util.find_spec('edge_tts') is not None
+    except Exception:                               # noqa: BLE001
+        edge_ok = False
+
+    if key and edge_ok:
+        add(OK, '配音后端', 'MiniMax 已配置（%s）+ Edge TTS 免费可用，任选其一' % src)
+    elif key:
+        add(OK, '配音后端', 'MiniMax 已配置（%s）。想要免费方案：pip install edge-tts 后加 --provider edge' % src)
+    elif edge_ok:
+        add(OK, '配音后端', 'Edge TTS 免费可用（无需 key），用 --provider edge 或把 brand.json 的 tts.provider 设为 edge')
+    else:
+        add(WARN, '配音后端',
+            '两条路都没通：没有 MINIMAX_API_KEY，也没装 edge-tts。'
+            '装免费的：pip install edge-tts，然后 --provider edge；'
+            '或者自己生成 audio/scene_N.mp3 后用 --no-tts')
 
     # ---- 8. 项目结构 ----
     need = ['brand.json', 'engine/engine.js', 'engine/render.js',

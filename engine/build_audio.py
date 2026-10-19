@@ -13,11 +13,16 @@
 
 用法：
     python engine/build_audio.py <集目录>
-    python engine/build_audio.py <集目录> --no-tts     # 复用已有 scene_*.mp3，只重算时间轴
+    python engine/build_audio.py <集目录> --provider edge       # 免费，无需任何 key
+    python engine/build_audio.py <集目录> --no-tts            # 复用已有 scene_*.mp3，只重算时间轴
     python engine/build_audio.py <集目录> --voice male-qn-jingying --speed 1.15
 
-TTS key 查找顺序（MiniMax）：
-    $MINIMAX_API_KEY → <集目录>/minimax_key.txt → <项目根>/minimax_key.txt
+配音后端（brand.json 的 tts.provider，或 --provider 覆盖，默认 minimax）：
+    minimax   需要 key，查找顺序：
+              $MINIMAX_API_KEY → <集目录>/minimax_key.txt → <项目根>/minimax_key.txt
+    edge      免费，不需要 key，需要先 `pip install edge-tts`。
+              音色形如 zh-CN-YunxiNeural（男）/ zh-CN-XiaoxiaoNeural（女）
+    none      不合成，等价于 --no-tts，要求 audio/scene_N.mp3 已经存在
 
 为什么必须先有配音再画画面：
     时间轴由「真实语音的静音位置」反推，不是按字数估算。先画后配音，
@@ -120,6 +125,37 @@ def tts_one(out_path, text, key, model, voice, speed):
             last = str(e)
         time.sleep(1.5 * (attempt + 1))
     raise RuntimeError('TTS 失败（%s）：%s' % (os.path.basename(out_path), last))
+
+
+def tts_edge(out_path, text, voice, speed):
+    """微软 Edge 的在线语音合成：免费，不需要任何 API key。
+
+    依赖第三方包 edge-tts（`pip install edge-tts`），所以延迟导入——
+    没装的人跑 minimax 后端时不受影响。
+    产物是 24kHz 单声道 mp3，后续 ffmpeg 统一重采样，和 32kHz 的 MiniMax 产物等价。
+    """
+    try:
+        import asyncio
+        import edge_tts
+    except ImportError:
+        raise RuntimeError(
+            'Edge TTS 需要先装依赖：pip install edge-tts\n'
+            '（免费、不需要 key。音色举例：zh-CN-YunxiNeural 男 / zh-CN-XiaoxiaoNeural 女）')
+
+    rate = '%+d%%' % int(round((float(speed) - 1.0) * 100))
+    last = None
+    for attempt in range(4):
+        try:
+            async def _go():
+                await edge_tts.Communicate(text, voice, rate=rate).save(out_path)
+            asyncio.run(_go())
+            if os.path.isfile(out_path) and os.path.getsize(out_path) > 1000:
+                return True
+            last = '返回音频过短'
+        except Exception as e:                      # noqa: BLE001
+            last = str(e)
+        time.sleep(1.5 * (attempt + 1))
+    raise RuntimeError('Edge TTS 失败（%s）：%s' % (os.path.basename(out_path), last))
 
 
 # ------------------------------------------------------- 从静音位置反推句级节拍
@@ -256,8 +292,15 @@ def main():
         brand = json.load(io.open(bj, encoding='utf-8'))
     tts_cfg = brand.get('tts') or {}
 
+    PROVIDER = opt('provider', tts_cfg.get('provider', 'minimax')).strip().lower()
+    if PROVIDER not in ('minimax', 'edge', 'none'):
+        print('未知的 tts.provider：%s（只支持 minimax / edge / none）' % PROVIDER)
+        return 2
+
+    # 音色的默认值取决于后端：两家的 voice id 体系完全不同，不能混用
+    _voice_default = 'zh-CN-YunxiNeural' if PROVIDER == 'edge' else 'male-qn-jingying'
     MODEL = opt('model', tts_cfg.get('model', 'speech-2.8-hd'))
-    VOICE = opt('voice', tts_cfg.get('voice', 'male-qn-jingying'))
+    VOICE = opt('voice', tts_cfg.get('voice') or _voice_default)
     SPEED = float(opt('speed', tts_cfg.get('speed', 1.15)))
     INTRO = float(tts_cfg.get('intro', 1.5))
     GAP = float(tts_cfg.get('gap', 0.55))
@@ -278,15 +321,23 @@ def main():
     os.makedirs(audio, exist_ok=True)
 
     # ---- 1. TTS ----
-    if no_tts:
-        print('--no-tts：复用已有配音')
+    if no_tts or PROVIDER == 'none':
+        print('跳过合成（%s）：复用已有配音' % ('--no-tts' if no_tts else 'tts.provider=none'))
+    elif PROVIDER == 'edge':
+        print('配音后端：Edge TTS（免费）  音色 %s  语速 %.2f' % (VOICE, SPEED))
+        for sc in SCENES:
+            p = os.path.join(audio, 'scene_%d.mp3' % sc['scene'])
+            print('  第 %d 幕（%d 句）...' % (sc['scene'], len(sc['sentences'])))
+            tts_edge(p, ''.join(sc['sentences']), VOICE, SPEED)
+            time.sleep(0.8)
     else:
         key = find_key(ep_dir)
         if not key:
-            print('找不到 MiniMax API key。三种方式：\n'
+            print('找不到 MiniMax API key。四种方式：\n'
                   '  1) 环境变量 MINIMAX_API_KEY\n'
                   '  2) <项目根>/minimax_key.txt\n'
-                  '  3) --no-tts（复用已有 scene_*.mp3，只重算时间轴）\n')
+                  '  3) --provider edge（免费，需 pip install edge-tts）\n'
+                  '  4) --no-tts（复用已有 scene_*.mp3，只重算时间轴）\n')
             return 3
         for sc in SCENES:
             p = os.path.join(audio, 'scene_%d.mp3' % sc['scene'])
@@ -396,7 +447,7 @@ def main():
             'durations': [s['duration'] for s in timeline],
             'gaps': [s['gap_after'] for s in timeline],
             'intro': INTRO, 'gap': GAP, 'total': total, 'tail_pad': TAIL_PAD,
-            'voice': '%s/%s' % ('minimax', VOICE), 'speed': SPEED,
+            'voice': '%s/%s' % (PROVIDER, VOICE), 'speed': SPEED,
             'subtitles': subs}, ensure_ascii=False) + ';\n')
     io.open(os.path.join(ep_dir, 'audio', 'timeline.json'), 'w', encoding='utf-8', newline='\n').write(
         json.dumps({'total': total, 'intro': INTRO, 'gap': GAP,
