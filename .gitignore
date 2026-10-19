@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Project-specific
+# 每集工作目录（含大量中间产物）
+S1_ep*/
+S2_ep*/
+S3_ep*/
+S4_ep*/
+S5_ep*/
+S6_ep*/
+S7_ep*/
+S8_ep*/
+
+# 帧文件
+frames_ep*/
+*_frames/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.mov
+*.avi
+*.wav
+*.mp3
+*.srt
+
+# 生成的 HTML 看板
+PROGRESS.html
+
+# 归档输出
+archive_output/
+MANIFEST_flat.md
+
+# 临时文件
+*.tmp
+*.bak
+*.bak-*
+*.pre-split*
+*.superseded*
+
+# 密钥/配置
+minimax_key.txt
+archive_config.json
+*.pem
+*.key

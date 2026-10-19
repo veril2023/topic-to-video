@@ -1,0 +1,36 @@
+{
+  "ep": "06",
+  "title": "万物皆数与第一次危机",
+  "season": "S1",
+  "variant": "W",
+  "dimension": "待定",
+  "started": "2026-10-19",
+  "updated": "2026-10-19",
+  "current_step": 1,
+  "score_before": "4:2",
+  "score_after": null,
+  "steps": [
+    { "n": 1,  "name": "选题分析（体检表 9 问）",      "gate": "QC-0",  "status": "pending", "artifact": "", "note": "" },
+    { "n": 2,  "name": "观众 / 平台确认",               "gate": "",      "status": "pending", "artifact": "", "note": "" },
+    { "n": 3,  "name": "单集目标（先写结尾再写开头）",   "gate": "",      "status": "pending", "artifact": "", "note": "" },
+    { "n": 4,  "name": "大纲（七幕 + 变体 + 升维型）",   "gate": "",      "status": "pending", "artifact": "", "note": "" },
+    { "n": 5,  "name": "查重（钩子/变体/升维/演示）",    "gate": "QC-1",  "status": "pending", "artifact": "", "note": "" },
+    { "n": 6,  "name": "检索稿 + FACTS.md",             "gate": "QC-20", "status": "pending", "artifact": "", "note": "" },
+    { "n": 7,  "name": "开场三件套（钩子+赌注+拆字幕）", "gate": "QC-27/28", "status": "pending", "artifact": "", "note": "" },
+    { "n": 8,  "name": "分镜设计 + 分镜板 SVG",          "gate": "QC-17", "status": "pending", "artifact": "", "note": "" },
+    { "n": 9,  "name": "素材预处理",                     "gate": "QC-15/18", "status": "pending", "artifact": "", "note": "" },
+    { "n": 10, "name": "音频构建（三层 + 片头BGM）",     "gate": "QC-3/5", "status": "pending", "artifact": "", "note": "" },
+    { "n": 11, "name": "HTML 动画（句级驱动）",          "gate": "QC-4/11/13", "status": "pending", "artifact": "", "note": "" },
+    { "n": 12, "name": "probe + 全量渲染 + 编码",        "gate": "QC-9",  "status": "pending", "artifact": "", "note": "" },
+    { "n": 13, "name": "QC 门全跑（0~28）",              "gate": "QC-0~28", "status": "pending", "artifact": "", "note": "" },
+    { "n": 14, "name": "逐帧验收 + 体检门",              "gate": "QC-21/22/23/24/26/29", "status": "pending", "artifact": "", "note": "" },
+    { "n": 15, "name": "交付 + 归档 + 复盘回写",         "gate": "QC-7/8/16/19", "status": "pending", "artifact": "", "note": "" }
+  ],
+  "gates": {
+    "QC-27_hooks": null,
+    "QC-28_subpacing": null,
+    "QC-29_epcheck": null
+  },
+  "facts_pending": [],
+  "notes": "复制本文件到集目录，用 scripts/progress.py 维护"
+}
