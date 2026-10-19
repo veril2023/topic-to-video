@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""epcheck.py —— 《万物有数》每集体检门（QC-29 / v6）
+"""epcheck.py —— 竖屏知识短视频每集体检门（QC-29）
 
 用途：抓"低级格式错误"，不判艺术质量。渲染完、合片后、归档前各跑一次。
 用法：
-    python _audit/epcheck.py S1_ep06_xxx
-    python _audit/epcheck.py S1_ep06_xxx --frames 12     # 抽样帧数（默认 9）
-    python _audit/epcheck.py S1_ep06_xxx --strict        # WARN 也算失败
+    python scripts/epcheck.py ep01_你的主题
+    python scripts/epcheck.py ep01_你的主题 --frames=12     # 抽样帧数（默认 9）
+    python scripts/epcheck.py ep01_你的主题 --strict        # WARN 也算失败
 
 退出码：0 全通过（可有 WARN）；1 有 FAIL；2 参数错误
 

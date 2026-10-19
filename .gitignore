@@ -37,19 +37,15 @@ ENV/
 Thumbs.db
 
 # Project-specific
-# 每集工作目录（含大量中间产物）
-S1_ep*/
-S2_ep*/
-S3_ep*/
-S4_ep*/
-S5_ep*/
-S6_ep*/
-S7_ep*/
-S8_ep*/
-
-# 帧文件
+# 每集工作目录（含大量中间产物）—— 形如 ep01_标题 / S1_ep01_标题
+ep[0-9][0-9]*/
+S[0-9]_ep[0-9][0-9]*/
 frames_ep*/
 *_frames/
+
+# 帧文件与成片
+**/frames/
+**/audio/
 *.jpg
 *.jpeg
 *.png
@@ -74,7 +70,8 @@ MANIFEST_flat.md
 *.pre-split*
 *.superseded*
 
-# 密钥/配置
+# 密钥/配置（只提交 brand.example.json）
+brand.json
 minimax_key.txt
 archive_config.json
 *.pem

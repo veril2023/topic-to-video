@@ -12,7 +12,7 @@
 nosub 的 cue 不上屏，不参与判定。
 
 用法：
-  python qc28_subpacing.py ../S1_ep06_xxx/timeline.js
+  python qc28_subpacing.py ../ep01_你的主题/timeline.js
 退出码：0 全 PASS，1 有 FAIL
 """
 import json
@@ -22,7 +22,7 @@ import sys
 MAX_CHARS = 22
 MAX_DUR = 4.5
 # 语速阈值：本系列是 1.12-1.18 倍速中文旁白，实测 5-7 字/秒。
-# 定 8 字/秒做下界会把全部 cue 误判成"停太久"（ep05 实测 67/68 条报警），故取 3.5-9.0。
+# 定 8 字/秒做下界会把全部 cue 误判成"停太久"（历史实测 67/68 条报警），故取 3.5-9.0。
 # 参考：22 字 / 4.5s = 4.9 字/秒，两条硬指标本身就落在合理区间内。
 SPEED_LO = 3.5
 SPEED_HI = 9.0

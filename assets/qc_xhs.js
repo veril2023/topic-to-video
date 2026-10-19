@@ -1,5 +1,5 @@
 /**
- * qc_xhs.js — 《万物有数》小红书九图 · 自动缺陷检查（QC）
+ * qc_xhs.js — 小红书九图 · 自动缺陷检查（版式机器门 A / F1–F6）
  *
  * 判据全部基于 DOM 实测包围盒（getBBox / getBoundingClientRect），不靠目测：
  *   F1 越界   元素 bbox 超出 SVG viewBox（0 0 880 560）→ 文字被静默裁切

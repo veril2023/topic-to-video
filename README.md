@@ -1,6 +1,7 @@
-# 《万物有数》竖屏数学短视频生产技能 · v6 · 通用版
+# 竖屏知识科普短视频生产技能
 
-> **一句话**：把"一个人被什么麻烦逼到墙角，然后造出了一个原本不存在的东西"做成 67 集竖屏短视频的完整生产技能。去平台依赖，任何 AI Agent 都能用。
+> **输入一个主题，输出一条能留住人的竖屏知识短片。**
+> 这套技能不含任何现成选题或素材——它给的是一条能复现同等质量的流水线：七幕结构、分镜语言、句级动画、三层声轨、29 道质检门。
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
@@ -10,167 +11,160 @@
 
 ## 目录
 
-- [这是什么](#这是什么)
+- [这是什么 / 不是什么](#这是什么--不是什么)
+- [核心方法：七幕升维](#核心方法七幕升维)
 - [三种使用方式](#三种使用方式)
 - [环境准备](#环境准备)
 - [快速开始](#快速开始)
 - [目录结构](#目录结构)
 - [脚本参考](#脚本参考)
 - [常见问题](#常见问题)
-- [贡献](#贡献)
 - [许可证](#许可证)
 
 ---
 
-## 这是什么
+## 这是什么 / 不是什么
 
-这是一个**数学史 / 数学本质科普短视频系列**的完整生产技能包，原名为《万物有数》，共 8 季 67 集，适配视频号 / 抖音 / 快手 / 小红书。
+**是什么**：一套竖屏（1080×1920）知识讲解短视频的**生产方法与工具集**。适用于科普、历史、经济、心理、技术原理等任何"讲清一个概念 / 一场变革 / 一个人的发现"的题材。
 
-**核心叙事框架**：每集讲"一个人被什么麻烦逼到墙角，然后造出了一个原本不存在的东西"，用七幕升维结构（奇景 → 困局 → 动手 → 造物 → 穿透 → 升维 → 追问）。
+**不是什么**：不是一个选题库，不是一套现成素材，不是某个系列的内容备份。仓库里**没有任何一集的具体内容**——没有集名清单、没有台词、没有画面素材。
 
-**本版本是通用版**：从 WorkBuddy 技能包移植而来，去除了平台特定依赖。你可以：
+**它解决的问题**：把"讲一个知识点"改造成"看一个人怎么被逼出一个发明"。
 
-1. 把 `SKILL.md` 当**提示词**喂给任何 AI Agent（DeepSeek、豆包工作、千问工作、GPT、Claude 等）
-2. **Clone 这个仓库**，按命令行操作
-3. 按需查阅 `references/` 下的某个章节
+| 普通科普写法 | 这套写法 |
+|---|---|
+| "今天我们来讲勾股定理" | "一块地，边长为 1 的正方形，对角线多长？" |
+| 先给定义，再举例子 | 先给困境，再给造物 |
+| 讲完就走 | 升维成一个可迁移的思维动作 + 留一个没答案的问题 |
+| 靠信息量留人 | 靠悬念密度留人（钩子间隔 ≤25s） |
+
+---
+
+## 核心方法：七幕升维
+
+每集 = **一个人被什么麻烦逼到墙角，然后造出了一个原本不存在的东西**。
+
+| 幕 | 名称 | 时长 | 硬要求 |
+|---|---|---|---|
+| 0 | 片头 | ≤1.0s | 品牌元素齐全 + 同起片头 BGM |
+| 1 | 奇景 | 12–20s | 片头后 3s 亮赌注；一个可看见的物 + 数量；首句 ≤15 字 |
+| 2 | 困局 | 30–45s | 4–8 个镜头；必须出分镜板 |
+| 3 | 动手 | 22–32s | "跟着我算一步"，10 秒内算得完 |
+| 4 | 造物 | 45–70s | 全集最重要动画段；≥1 个"画面自解释"演示 |
+| 5 | 穿透 | 35–50s | 领域跨越链条，具体到人物与年份 |
+| 6 | 升维 | 25–40s | 收束为单一意象；末尾留白 1.5s 全静音 |
+| 7 | 追问 | 12–18s | 下集预告 + 记分牌 + 关键词铭牌 |
+
+合计 182–276s。四变体（七幕升维 / 双线对撞 / 思想实验 / 物的传记）+ 七种升维型（尺度 / 视角 / 时间 / 概念 / 身份 / 反身 / 文明），详见 [`references/R1-叙事结构.md`](references/R1-叙事结构.md)。
 
 ---
 
 ## 三种使用方式
 
-### 方式 A：把 SKILL.md 当提示词（最简单）
+### 方式 A：当提示词用（最简单）
 
-直接把 `SKILL.md` 的内容复制给任何 AI Agent，它会按照里面的红线和 15 步流程帮你生产视频。
+把 `SKILL.md` 的内容丢给任何 AI（DeepSeek、豆包、千问、GPT、Claude、本地模型都行），然后给主题：
 
 ```
-示例用法：
-"读一下这份技能文件，帮我做一集关于'零的历史'的《万物有数》短视频"
-"按照 SKILL.md 的 QC-27 钩子密度门检查我的脚本"
+读一下这份技能文件。我要做一集关于「为什么地图上格陵兰岛那么大」的竖屏科普视频，
+目标观众是高中生，发抖音，3 分钟。按里面的流程一步步来，每步做完先给我看。
 ```
 
-### 方式 B：Clone 仓库，命令行操作（最完整）
+> 只要模型能读长文 + 能写代码，就能跑。脚本可选（它是给会用命令行的人加速用的）。
+
+### 方式 B：Clone 仓库跑流水线（最完整）
 
 ```bash
-# 1. 克隆
 git clone <repo-url>
-cd math-essence-video-generic
+cd vertical-explainer-video
 
-# 2. 安装 Python 依赖
 pip install numpy pillow
+npm install puppeteer-core
 
-# 3. 开新集（示例：ep06）
-EP=S1_ep06_万物皆数与第一次危机
+# 开新集
+EP=ep01_你的主题
 mkdir -p "$EP"
-cp templates/FACTS.template.md   "$EP/FACTS.md"
-cp templates/脚本骨架.template.md "$EP/脚本_ep06.md"
-python scripts/progress.py init "$EP" 06 万物皆数与第一次危机
+cp templates/FACTS.template.md    "$EP/FACTS.md"
+cp templates/脚本骨架.template.md "$EP/脚本.md"
+python scripts/progress.py init "$EP" 01 "你的主题"
 
-# 4. 查看当前进度
+# 随时看进度
 python scripts/progress.py show "$EP"
-
-# 5. 渲染完成后跑体检
-python scripts/epcheck.py "$EP"
+python scripts/progress.py html "$EP"     # 生成可视化看板
 ```
 
-### 方式 C：按需查阅 references/（最灵活）
+### 方式 C：按需查方法论（最灵活）
 
-| 遇到什么问题 | 读哪个文件 |
+| 你卡在哪 | 读哪个 |
 |---|---|
-| 不知道这一集该讲什么 | `references/R1-选题与叙事.md` §2 逐季分集表 |
-| 不知道怎么写开场钩子 | `references/R1-选题与叙事.md` §3.4 |
-| 不知道怎么做分镜 | `references/R2-视觉系统.md` |
-| 不知道怎么配声音 | `references/R3-声音与语气.md` |
-| 质检报错了 | `references/R4-质检门.md` |
-| 不知道完整的 15 步流程 | `references/R5-生产流程.md` |
-| 遇到奇怪的 bug | `references/R6-经验库.md`（搜关键词） |
-| 想做小红书九图 | `references/R7-小红书图文.md` |
-| 想改这个技能本身 | `references/R8-技能维护指南.md` |
+| 不知道这个选题能不能做 | R1 §2 选题体检 9 问 |
+| 不知道怎么开场 | R1 §3.4 钩子六句范式 |
+| 不知道怎么设计镜头 | R2 §4.3 六镜型 |
+| 不知道怎么配音/配乐 | R3 三层声轨 + 片头 BGM |
+| 质检报错了 | R4 对应的 QC 条目 |
+| 遇到奇怪的 bug | R6 经验库（Ctrl+F 搜现象） |
 
 ---
 
 ## 环境准备
 
-| 依赖 | 版本要求 | 用途 | 是否必须 |
+| 依赖 | 版本 | 用途 | 必须 |
 |---|---|---|---|
-| Python | 3.8+ | 跑 `scripts/*.py`（需要 numpy + PIL） | 必须 |
-| Node.js | 18+ | 跑 `scripts/*.js`（Chrome 渲染） | 必须 |
-| Chrome / Chromium | 最新版 | 渲染 HTML 动画帧 | 必须 |
-| ffmpeg / ffprobe | 最新版 | 音频处理、视频编码、体检门 | 必须 |
-| MiniMax API Key | — | TTS 语音合成 | 可选 |
-| Agnes API Key | — | AI 图生图 | 可选 |
-
-### 安装依赖
+| Python | 3.8+ | `scripts/*.py`（numpy + pillow） | ✅ |
+| Node.js | 18+ | `scripts/*.js`（Chrome 渲染） | ✅ |
+| Chrome / Chromium | 最新 | 渲染逐帧画面 | ✅ |
+| ffmpeg / ffprobe | 最新 | 音频处理、编码、体检 | ✅ |
+| TTS 服务 | — | 旁白合成 | 可选 |
+| 图生图服务 | — | AI 卡片素材 | 可选 |
 
 ```bash
-# Python 依赖
 pip install numpy pillow
-
-# Node 依赖（渲染用）
-npm install puppeteer playwright
+npm install puppeteer-core
 ```
 
-### 脚本路径说明
+**路径全部自适应**，不写死任何绝对路径：
 
-所有脚本已内置自适应路径解析，无需手动配置：
-
-- **ffmpeg/ffprobe**：自动探测 `MEV_FFMPEG` / `MEV_FFPROBE` 环境变量 → 常见安装路径 → 系统 PATH
-- **Chrome/Chromium**：由渲染脚本自动探测
-- **Python**：使用系统 Python 即可
-
-如需指定自定义路径：
 ```bash
-export MEV_FFMPEG=/path/to/ffmpeg
-export MEV_FFPROBE=/path/to/ffprobe
+# 需要覆盖时
+export MEV_FFMPEG=/usr/local/bin/ffmpeg
+export MEV_FFPROBE=/usr/local/bin/ffprobe
+export MEV_CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 ```
 
 ---
 
 ## 快速开始
 
-### 1. 开新集
+### 1. 确认输入契约（SKILL.md §0）
+
+主题 / 观众 / 平台 / 时长 / 系列身份 / 品牌配置 —— 6 项。
+
+### 2. 过选题体检（QC-0）
 
 ```bash
-EP=S1_ep06_万物皆数与第一次危机
-mkdir -p "$EP"
-cp templates/FACTS.template.md   "$EP/FACTS.md"
-cp templates/脚本骨架.template.md "$EP/脚本_ep06.md"
-python scripts/progress.py init "$EP" 06 万物皆数与第一次危机
-python scripts/progress.py show "$EP"
+# R1 §2 的 9 个问题，第 1/2/4/5 条必须过，否则换题
 ```
 
-### 2. 查看进度看板
+### 3. 写脚本前先跑两个门
 
 ```bash
-python scripts/progress.py html "$EP"   # 生成 PROGRESS.html 可视化看板
+python scripts/qc27_hooks.py    "$EP/timeline.js"      # 钩子密度 ≤25s
+python scripts/qc28_subpacing.py "$EP/timeline.js"      # 字幕 ≤22 字 / ≤4.5s
 ```
 
-### 3. 跑体检门
+> 这两个门**必须在写 HTML 之前跑**。此时改字零成本；渲染后发现要重录重渲。
+
+### 4. 渲染完跑体检
 
 ```bash
-python scripts/epcheck.py "$EP"         # 14 项自动检查
-python scripts/epcheck.py "$EP" --strict  # WARN 也算失败
+python scripts/epcheck.py "$EP"
+python scripts/epcheck.py "$EP" --strict
 ```
 
-### 4. 跑钩子密度门
+### 5. 归档
 
 ```bash
-python scripts/qc27_hooks.py "$EP/timeline.js"
-```
-
-### 5. 跑字幕节奏门
-
-```bash
-python scripts/qc28_subpacing.py "$EP/timeline.js"
-```
-
-### 6. 归档
-
-```bash
-# 指定归档目录
-MEV_DST=/path/to/archive python scripts/archive_flat.py
-
-# 或只归档指定集
-python scripts/archive_flat.py ep04
+MEV_DST=/your/archive python scripts/archive_flat.py
 ```
 
 ---
@@ -178,135 +172,85 @@ python scripts/archive_flat.py ep04
 ## 目录结构
 
 ```
-math-essence-video-generic/
-├── SKILL.md                 # 技能入口（可当提示词用）
-├── README.md                # 本文件
-├── LICENSE                  # MIT 许可证
-├── .gitignore               # Git 忽略规则
-├── references/              # R1~R8 方法论文档
-│   ├── R1-选题与叙事.md      # 季结构 / 七幕 / 变体 / 钩子范式
-│   ├── R2-视觉系统.md        # 资产四级 / 动画分级 / 分镜层
-│   ├── R3-声音与语气.md      # 三层声轨 / BGM / 声线
-│   ├── R4-质检门.md          # QC-0~QC-29 全表
-│   ├── R5-生产流程.md        # 15 步完整流程
-│   ├── R6-经验库.md          # 100 条经验
-│   ├── R7-小红书图文.md      # 9 图 + 文案规范
-│   └── R8-技能维护指南.md    # 改 skill 前的必读
-├── scripts/                 # 可直接运行的脚本
-│   ├── epcheck.py           # 体检门 QC-29（14 项）
-│   ├── qc27_hooks.py        # 钩子密度门
-│   ├── qc28_subpacing.py    # 字幕节奏门
-│   ├── qc26_overlap.js      # 重叠压字门
+vertical-explainer-video/
+├── SKILL.md                      # 技能入口（可当提示词）
+├── README.md                     # 本文件
+├── LICENSE
+├── .gitignore
+├── brand.example.json            # 品牌配置示例
+├── references/
+│   ├── R1-叙事结构.md             # 选题体检 / 七幕 / 变体 / 升维 / 钩子 / 赌注
+│   ├── R2-视觉系统.md             # 资产四级 / 动画分级 / 六镜型 / 安全区 / 字幕
+│   ├── R3-声音与语气.md           # 三层声轨 / BGM / 幽默 / 通俗化 / 真实性
+│   ├── R4-质检门.md               # QC-0~QC-29
+│   ├── R5-生产流程.md             # 15 步 / 渲染 / 引擎契约
+│   ├── R6-经验库.md               # 现象 → 根因 → 规则
+│   ├── R7-小红书图文.md           # 9 图规范
+│   └── R8-技能维护指南.md         # 改技能前必读
+├── scripts/
+│   ├── epcheck.py                # 体检门（14 项）
+│   ├── qc27_hooks.py             # 钩子密度
+│   ├── qc28_subpacing.py         # 字幕节奏
+│   ├── qc26_overlap.js           # 重叠压字
 │   ├── audit_motion_template.py  # 运动审计模板
-│   ├── progress.py          # 15 步进度跟踪
-│   └── archive_flat.py      # 平铺归档 + sha256 校验
-├── templates/               # 新集开工模板
-│   ├── FACTS.template.md     # 事实台账
-│   ├── 脚本骨架.template.md  # 七幕脚本骨架
-│   ├── PROGRESS.template.json # �度进度模板
-│   └── README.md            # 模板使用说明
+│   ├── progress.py               # 进度跟踪 + 看板
+│   └── archive_flat.py           # 归档 + sha256
+├── templates/
+│   ├── FACTS.template.md         # 事实台账
+│   ├── 脚本骨架.template.md      # 七幕脚本骨架
+│   ├── PROGRESS.template.json    # 进度模板
+│   └── README.md
 └── assets/
-    └── render_xhs_palette.js # 小红书九图生产母版
+    ├── qc_xhs.js                 # 九图版式质检
+    └── xhs_center.py             # 九图重心测量
 ```
 
 ---
 
 ## 脚本参考
 
-### `scripts/epcheck.py` — 体检门（QC-29）
-
-14 项自动检查，抓低级格式错误：
-
-| 检查 | 内容 |
-|---|---|
-| CK-01 | 音画时长差 |
-| CK-02 | 字幕末条越界 |
-| CK-03 | 字幕条重叠 |
-| CK-04 | 片头 BGM |
-| CK-05 | 字幕空洞 |
-| CK-06 | 纯色/黑帧 |
-| CK-07 | 画面模糊 |
-| CK-08 | 纯文字帧 |
-| CK-09 | 帧序完整 |
-| CK-10 | 编码合规 |
-| CK-11 | 封面尺寸 |
-| CK-12 | 结尾卡停留 |
-| CK-13 | 文件体积 |
-| CK-14 | 图形语义匹配（人工） |
-
-### `scripts/progress.py` — 进度跟踪
-
-```bash
-python scripts/progress.py init  <集目录> <集号> <标题>   # 初始化
-python scripts/progress.py show  <集目录>                 # 查看进度
-python scripts/progress.py done  <集目录> <步骤号> [备注]  # 标记完成
-python scripts/progress.py gate  <集目录> <门名> PASS|FAIL # 记录门禁结果
-python scripts/progress.py note  <集目录> <文字>           # 追加备注
-python scripts/progress.py html  <集目录> [输出路径]       # 生成看板
-```
-
-### `scripts/qc27_hooks.py` — 钩子密度门
-
-判定：最长无钩子间隔 ≤ 25s、前 30s 内 ≥ 1 次提问、片头后 3s 内出现母题赌注句。
-
-### `scripts/qc28_subpacing.py` — 字幕节奏门
-
-判定：单条字数 ≤ 22、单条停留 ≤ 4.5s、阅读速度 3.5-9.0 字/秒。
-
-### `scripts/archive_flat.py` — 平铺归档
-
-复制视频/封面/发布文档到目标目录，回读 sha256 逐字节校验，生成 MANIFEST。
+| 脚本 | 干什么 | 典型用法 |
+|---|---|---|
+| `epcheck.py` | 14 项格式体检（音画时长/字幕/BGM/黑帧/编码/封面…） | `python scripts/epcheck.py ep01_xxx` |
+| `progress.py` | 15 步进度 + 门禁 + HTML 看板 | `python scripts/progress.py show ep01_xxx` |
+| `qc27_hooks.py` | 钩子密度（最长空窗 ≤25s、前 30s ≥1 问、3s 内赌注句） | `python scripts/qc27_hooks.py timeline.js` |
+| `qc28_subpacing.py` | 字幕节奏（≤22 字 / ≤4.5s / 3.5–9 字每秒） | `python scripts/qc28_subpacing.py timeline.js` |
+| `qc26_overlap.js` | 图形 × 文本重叠 + 残影文本 | `node scripts/qc26_overlap.js page.html 9431 8891 out.json` |
+| `audit_motion_template.py` | 运动审计模板（复制后按集改） | 见文件头注释 |
+| `archive_flat.py` | 平铺归档 + sha256 回读 + MANIFEST | `MEV_DST=/path python scripts/archive_flat.py` |
 
 ---
 
 ## 常见问题
 
-### Q：这个技能包和原版有什么区别？
+**Q：这个仓库里有具体的视频内容吗？**
+A：没有。只有方法、判据、脚本、模板。选题由你给。
 
-A：原版是 WorkBuddy 技能包，依赖 WorkBuddy 平台。通用版去除了所有平台特定依赖（`agent_created` 元数据、WorkBuddy 工具引用、硬编码 Windows 路径），保留了全部核心方法论和可运行脚本。详见 [SKILL.md §0b](SKILL.md)。
+**Q：我不写代码，能用吗？**
+A：能。把 `SKILL.md` 当提示词喂给 AI 就行；脚本是加速器，不是必需品。
 
-### Q：我可以用它做什么？
+**Q：一定要用 MiniMax / Agnes 这些服务吗？**
+A：不。它们是原作者的默认选择。TTS 换成任何服务都行，图生图换成任何服务都行，脚本不绑定。
 
-A：你可以用它生产《万物有数》系列的任意一集——从选题分析、脚本写作、分镜设计、动画渲染到质检归档，全流程覆盖。也可以只取其中某个环节的方法论（比如只学七幕结构用在其他创作中）。
+**Q：macOS / Linux 能跑吗？**
+A：能。所有脚本用 `os.path` 拼路径，Chrome 与 ffmpeg 都是跨平台探测。
 
-### Q：脚本能在 macOS / Linux 上跑吗？
+**Q：做系列可以吗？**
+A：可以。`SKILL.md §0` 有系列身份追问清单（系列名 / 口号 / 核心诘问 / 集数），`brand.example.json` 是配置模板。
 
-A：可以。所有 Python 脚本已做跨平台适配（路径探测、路径拼接均使用 `os.path`）。Node 脚本同理。
-
-### Q：我没有 MiniMax / Agnes API Key？
-
-A：可以。TTS 可以用任何其他语音合成替代（ ElevenLabs、微软 Azure、甚至系统自带 TTS）。图生图同理，可以用任何 AI 图生图工具。脚本本身不绑定特定 API。
-
-### Q：怎么贡献？
-
-A：见下方「贡献」章节。
+**Q：怎么保证视频"同一个水平"？**
+A：靠三样东西：① 七幕结构固定 ② 29 道质检门有明确判据 ③ 脚本把格式类错误自动化。质量的下限由门守住，上限靠选题和文案。
 
 ---
 
 ## 贡献
 
-### 报告问题
-
-在 GitHub 上开 Issue，包含：
-- 问题描述
-- 环境信息（OS / Python 版本 / Node 版本）
-- 复现步骤
-- 期望行为 vs 实际行为
-
-### 修改技能
-
-修改前**必读** `references/R8-技能维护指南.md`，里面写了四种常见的改坏方式和 8 项自检清单。
-
-### 提交 PR
-
-1. Fork 本仓库
-2. 创建特性分支（`git checkout -b feature/my-change`）
-3. 提交更改（`git commit -m "描述"`）
-4. 推送到分支（`git push origin feature/my-change`）
-5. 在 GitHub 上开 Pull Request
+- **报 bug**：开 Issue，附 OS / Python / Node 版本 + 复现步骤 + 期望 vs 实际。
+- **改技能**：改之前**必读** `references/R8-技能维护指南.md`（四种改坏方式 + 8 项自检）。
+- **提 PR**：fork → 分支 → 提交 → PR。
 
 ---
 
 ## 许可证
 
-MIT — 见 [LICENSE](LICENSE)。可自由使用、修改、分发，保留原作者署名。
+MIT，见 [LICENSE](LICENSE)。

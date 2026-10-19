@@ -10,7 +10,7 @@
 （nosub 的 cue 不参与，因为观众看不到它）
 
 用法：
-  python qc27_hooks.py ../S1_ep06_xxx/timeline.js
+  python qc27_hooks.py ../ep01_你的主题/timeline.js
   python qc27_hooks.py <timeline.js> --gap 20 --early 30
 退出码：0 全 PASS，1 有 FAIL
 """

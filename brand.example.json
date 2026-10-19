@@ -1,0 +1,41 @@
+{
+  "_comment": "复制为 brand.json 后填写。不填也有默认值（深蓝灰渐变 + 琥珀 accent）。",
+  "series_name": "你的系列名",
+  "series_name_en": "YOUR SERIES",
+  "slogan": "一句不超过 12 字的口号",
+  "motif_question": "X 是 A 还是 B？",
+  "motif_side_a": "A",
+  "motif_side_b": "B",
+  "episode_prefix": "EP",
+  "accent": "#E8A33D",
+  "accent_alt": "#3FA98C",
+  "bg_gradient": ["#0D1118", "#1A2130"],
+  "card_face": "#141824",
+  "text_primary": "#F5F0E6",
+  "text_secondary": "rgba(245,240,230,.55)",
+  "logo_svg_file": "",
+  "corner_mark": {
+    "logo_px": 57,
+    "name_px": 33,
+    "left": 60,
+    "top": 220
+  },
+  "episode_mark": {
+    "enabled": true,
+    "number_px": 22,
+    "topic_px": 16,
+    "right": 60,
+    "top": 220,
+    "topic_max_chars": 10
+  },
+  "cover": {
+    "width": 1200,
+    "height": 1600,
+    "bg": "default"
+  },
+  "allow_real_photos": false,
+  "_notes": {
+    "allow_real_photos": "默认 false。改成 true 需同时把禁用实景照片的红线（SKILL.md §2 第 1 条）在发布文档中说明。",
+    "logo_svg_file": "可选。留空则用程序绘制的中性几何角标。"
+  }
+}

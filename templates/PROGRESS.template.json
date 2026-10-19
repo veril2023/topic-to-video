@@ -1,13 +1,13 @@
 {
-  "ep": "06",
-  "title": "万物皆数与第一次危机",
+  "ep": "01",
+  "title": "待填",
   "season": "S1",
   "variant": "W",
   "dimension": "待定",
-  "started": "2026-10-19",
-  "updated": "2026-10-19",
+  "started": "",
+  "updated": "",
   "current_step": 1,
-  "score_before": "4:2",
+  "score_before": "",
   "score_after": null,
   "steps": [
     { "n": 1,  "name": "选题分析（体检表 9 问）",      "gate": "QC-0",  "status": "pending", "artifact": "", "note": "" },
@@ -32,5 +32,5 @@
     "QC-29_epcheck": null
   },
   "facts_pending": [],
-  "notes": "复制本文件到集目录，用 scripts/progress.py 维护"
+  "notes": "由 scripts/progress.py 维护；不要手工改 status 以外的字段"
 }
