@@ -1,5 +1,5 @@
 ---
-name: vertical-explainer-video
+name: topic-to-video
 description: >-
   竖屏（1080×1920，9:16）知识科普短视频的完整生产技能。输入一个主题，产出 3–4.5 分钟成片 + 3:4 封面 + 发布文档
   （可选小红书九图）。**结构可插拔**：默认「七幕升维」（`structures/seven-act.md`，已生产验证），

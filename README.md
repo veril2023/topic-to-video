@@ -143,8 +143,8 @@ structures/
 ### 方式 B：Clone 仓库跑流水线（最完整，能直接出 mp4）
 
 ```bash
-git clone <repo-url>
-cd vertical-explainer-video
+git clone https://github.com/veril2023/topic-to-video.git
+cd topic-to-video
 npm install puppeteer-core
 
 # 0) 先自检：这台机器能不能真的出片
@@ -281,7 +281,7 @@ MEV_DST=/your/archive python scripts/archive_flat.py
 ## 目录结构
 
 ```
-vertical-explainer-video/
+topic-to-video/
 ├── SKILL.md                      # 技能入口（可当提示词）
 ├── README.md                     # 本文件
 ├── LICENSE
