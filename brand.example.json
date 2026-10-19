@@ -28,6 +28,18 @@
     "top": 220,
     "topic_max_chars": 10
   },
+  "tts": {
+    "model": "speech-2.8-hd",
+    "voice": "male-qn-jingying",
+    "speed": 1.15,
+    "intro": 1.5,
+    "gap": 0.55,
+    "gap_before_last": 1.6,
+    "tail_pad": 1.3,
+    "voice_gain": "2dB",
+    "sfx_volume": 0.16,
+    "pad_volume": 0.16
+  },
   "cover": {
     "width": 1200,
     "height": 1600,
@@ -38,5 +50,6 @@
     "allow_real_photos": "默认 false。改成 true 需同时把禁用实景照片的红线（SKILL.md §2 第 1 条）在发布文档中说明。",
     "logo_svg_file": "可选。留空则用程序绘制的中性几何角标。本仓库不附带任何现成 logo 本体，需自备。"
     ,"accent": "若把主色改成非暖色（蓝/绿），assets/xhs_center.py 里的暖色重心判定（r>140 且 r-b>40）需要同步调，否则九图居中会算偏。"
+    ,"tts": "上面 tts 段的值等同于 engine/build_audio.py 里的代码默认值，删掉或写成空对象行为不变。voice 必须是 MiniMax 的 voice_id；换别家 TTS 不用改这里——离线生成 audio/scene_N.mp3 后用 --no-tts 跑，见 README 常见问题。"
   }
 }

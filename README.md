@@ -354,7 +354,24 @@ A：没有。只有方法、判据、脚本、模板。选题由你给。
 A：能。把 `SKILL.md` 当提示词喂给 AI 就行；脚本是加速器，不是必需品。
 
 **Q：一定要用 MiniMax / Agnes 这些服务吗？**
-A：不。它们是原作者的默认选择。TTS 换成任何服务都行，图生图换成任何服务都行，脚本不绑定。
+
+A：不，但**图生图和配音要分开看**，两者的"换"成本完全不同：
+
+- **图生图（Agnes 等）**：脚本里根本没有调用代码，图片就是本地文件。
+  你用什么工具生成都行，放进 `assets/` 即可，**零成本替换**。
+- **配音（TTS）**：`engine/build_audio.py` 里的 `tts_one()` 目前**硬编码**了 MiniMax 的
+  `/v1/t2a_v2` 接口和请求体格式。换服务有两条路：
+
+  | 做法 | 要不要改代码 | 推荐度 |
+  |---|---|---|
+  | 用任何工具（剪映朗读 / Azure / ElevenLabs / CosyVoice / 其它任何 API）**离线**生成 `audio/scene_1.mp3`、`scene_2.mp3`……再跑 `python engine/build_audio.py <集目录> --no-tts` | 不改 | ⭐ 首选 |
+  | 改 `tts_one()` 里的 URL 和 payload，适配目标服务的接口 | 要改 | 想长期用某家再考虑 |
+
+  **为什么必须是"每幕一个 mp3"而不是一句一个**：下一句的起止时间是靠 `silencedetect`
+  从真实音频的静音位置反推出来的（DP 选最优切分），所以只要音频本身是正常朗读，
+  哪家 TTS 生成的都能用。
+
+  没有 key 时 `--no-tts` 就是官方逃生通道；`engine/selfcheck.py` 里 TTS key 只报 WARN 不报 FAIL。
 
 **Q：macOS / Linux 能跑吗？**
 A：能。所有脚本用 `os.path` 拼路径，Chrome 与 ffmpeg 都是跨平台探测。

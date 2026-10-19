@@ -447,7 +447,7 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 | Chrome / Chromium | 逐帧截图 | 无法渲染 | 装 Chrome，或 `npx playwright install chromium` |
 | ffmpeg / ffprobe | 音频、混音、编码、体检 | 无法出片 | `winget install Gyan.FFmpeg` / `brew install ffmpeg` |
 | 中文字体 | 画面里的中文 | 显示方框 | Linux: `fonts-noto-cjk`；Win/mac 自带 |
-| TTS key | 旁白合成 | 只能 `--no-tts` 复用已有音频 | MiniMax / 任意 TTS |
+| TTS key | 旁白合成 | 只能 `--no-tts` 复用已有音频 | MiniMax（`MINIMAX_API_KEY`）；或用任意 TTS 离线生成 `audio/scene_N.mp3` 后 `--no-tts` |
 
 环境变量覆盖：`MEV_FFMPEG` `MEV_FFPROBE` `MEV_CHROME` `MEV_FPS` `MEV_PORT` `MEV_CDP`
 `MINIMAX_API_KEY`。所有脚本**不含硬编码绝对路径**。
