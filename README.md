@@ -230,8 +230,8 @@ pip install edge-tts
 > 只有网页版对话（不能写文件、不能跑命令）的环境**产不出 mp4**，只能给脚本与分镜。
 
 ```bash
+# 可选：只有用 assets/ 里的小红书九图脚本才需要（主流程不用）
 pip install numpy pillow
-npm install puppeteer-core
 ```
 
 **路径全部自适应**，不写死任何绝对路径：
@@ -296,7 +296,8 @@ topic-to-video/
 │   ├── init_ep.py                #   建集骨架（三个插槽）
 │   ├── engine.js                 #   时间轴驱动核心
 │   ├── standalone.template.html  #   骨架壳（安全区/字幕/角标）
-│   ├── build_audio.py            #   TTS + 静音反推句界 + 三层混音
+│   ├── build_audio.py            #   TTS（4 后端）+ 静音反推句界 + 三层混音
+│   ├── tts_custom.py             #   ★ 自定义 TTS 接入点：只改这一个函数
 │   ├── render.js                 #   逐帧渲染（probe/cover/full/resume）
 │   ├── gen_srt.py                #   外挂字幕
 │   └── mux.py                    #   合片 + 3:4 封面
@@ -400,6 +401,38 @@ python engine/build_audio.py 01_你的主题 --provider edge
 
 **Q：那什么时候才需要付费 API？**
 A：只有两种情况：① 你想用 MiniMax 的音色（音质更好、可克隆）；② 你想给某几拍配 AI 生成的人物或氛围画面。**两者都不是必需的。**
+
+**Q：我自己的 TTS（某家云服务 / 本地模型 / 公司内部接口）怎么接？**
+
+A：**改一个函数，主流程代码一行都不用动。**
+
+打开 `engine/tts_custom.py`，里面只有一个 `synthesize()`：
+
+```python
+def synthesize(text, out_path, voice='', speed=1.0):
+    # text     —— 这一幕的全部台词，已拼好，整段合成，不要自己切句
+    # out_path —— 要写出的音频路径
+    # voice / speed —— brand.json 里 tts.voice / tts.speed 的值
+    # 返回 True；抛异常就停在这一步并打印原因
+    ...
+```
+
+文件里备了三段可直接取消注释的示例：**调命令行工具 / 调 HTTP 接口（OpenAI 兼容形状）/ 调本地模型**。填完这样跑：
+
+```bash
+python engine/build_audio.py 01_你的主题 --provider custom
+```
+
+也可以固化到 `brand.json`：`"tts": {"provider": "custom"}`
+
+> **为什么只改一个函数就够**：句子的起止时间是从**音频的静音位置**反推的
+> （`silencedetect` + DP 选最优切分），不依赖任何引擎的字级时间戳。
+> 只要你的 TTS 输出的是"正常朗读、句间有自然停顿"的音频，后面全部自动对齐。
+>
+> **唯一的硬约束**：每幕一个文件（`audio/scene_N.mp3`），不要按句输出。
+
+**Q：换了 TTS 之后报 `Invalid voice 'xxx'`？**
+A：`brand.json` 里留着上一家的音色名。脚本会自动发现并改用当前后端的默认音色（会打印一行警告），但**最好手动改掉**：`tts.voice` 填对应后端的名字，或者留空用默认。两家的音色 ID 完全不通用（Edge 是 `zh-CN-YunxiNeural` 这种，MiniMax 是 `male-qn-jingying` 这种）。
 
 **Q：macOS / Linux 能跑吗？**
 A：能。所有脚本用 `os.path` 拼路径，Chrome 与 ffmpeg 都是跨平台探测。

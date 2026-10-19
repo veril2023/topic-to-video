@@ -83,9 +83,9 @@ python scripts/gate0.py "<把用户的原话一字不改放进来>"
 > **完整分类（A/B/C/D 五级）+ 拒绝话术 + 换角度示例，见 `references/R10-适用边界.md`。**
 > **拒绝时必须同时给出替代方向**——只说"做不了"是能力不足，"这类不适合这个媒介，但可以这样改"才是专业判断。
 
-### 0.2 输入契约（开工前必须问清的 7 件事）
+### 0.2 输入契约（开工前必须问清的 8 件事）
 
-三问过了之后再问这 7 项。**这 7 项没有确认，不要开始写脚本**，缺一项就会在渲染前返工。
+三问过了之后再问这 8 项。**这 8 项没有确认，不要开始写脚本**，缺一项就会在渲染前返工。
 
 | # | 必答项 | 为什么必须问 | 默认值（用户说"随便"时用） |
 |---|---|---|---|
@@ -96,6 +96,23 @@ python scripts/gate0.py "<把用户的原话一字不改放进来>"
 | 5 | **结构**（可选） | 决定幕怎么排、时长怎么分 | `seven-act` 七幕升维（已生产验证） |
 | 6 | **系列身份**（可选） | 决定角标、片头、记分机制 | 单条视频，不做系列 |
 | 7 | **品牌配置**（可选） | 决定主色、logo、口号 | 用 `brand.example.json` 默认值 |
+| 8 | **配音方案**（可选） | 决定第 ① 步能不能跑起来 | `edge`（免费，需 `pip install edge-tts`） |
+
+**第 8 项怎么问（一句话，别展开成问卷）**：
+
+> 「配音我默认用免费的 Edge 语音（要装一个 `pip install edge-tts`，不用 key）。
+> 你有自己的 TTS 想用吗？有的话告诉我是哪个，我给你接上。」
+
+三种回答对应三种做法：
+
+| 用户说 | 你做什么 |
+|---|---|
+| 「随便 / 你定」 | 用 `--provider edge`，一个字都不用再问 |
+| 「我有 MiniMax / 某家的 key」 | `--provider minimax` + 告诉他把 key 放哪（见 §7） |
+| 「我要用 XX 家的 TTS」 | **改 `engine/tts_custom.py` 里的一个函数**，见 §3.5。不要改主流程代码 |
+
+**不要因为这一项卡住整个流程。** 它有默认值，用户没意见就直接走 edge；
+配音这一步随时可以重跑（`build_audio.py` 是幂等的，重跑会覆盖 `audio/`），不会浪费前面写好的台词和画面。
 
 **第 5 项怎么定（30 秒判断）**：先问一句——**这集里"造出来的那个东西"长什么样？**
 
@@ -319,6 +336,58 @@ python engine/mux.py "$EP" --cover 7.0       # 裁成 3:4 并存 mp4
 > 它会告诉你做到第几步、哪个门没过、`FACTS` 还有没有待补项。
 > 进度不要只记在聊天记录里。图形化看板：`python scripts/progress.py html $EP`。
 
+### 3.5 配音：四个后端，以及"我要用自己的 TTS"怎么接
+
+第 10 步用的是 `engine/build_audio.py`。它支持四个后端，**换后端不改任何主流程代码**：
+
+| `tts.provider` | 成本 | 前置条件 | 适用 |
+|---|---|---|---|
+| `edge` | **免费** | `pip install edge-tts` | 默认推荐，先跑通再换 |
+| `minimax` | 按量计费 | `MINIMAX_API_KEY` | 要更好的音质 / 声音克隆 |
+| `custom` | 看你接什么 | 改 `engine/tts_custom.py` 一个函数 | **你想用任何别的 TTS** |
+| `none` | — | 自己准备 `audio/scene_N.mp3` | 真人配音 / 外部流水线已经出好音频 |
+
+配置写在 `brand.json`，也可以命令行临时覆盖：
+
+```bash
+python engine/build_audio.py "$EP" --provider edge
+python engine/build_audio.py "$EP" --provider edge --voice zh-CN-XiaoxiaoNeural
+```
+
+#### 用户说"我想用 XX 家的 TTS"时，你做这一件事
+
+**打开 `engine/tts_custom.py`，改里头的 `synthesize()`。** 就这一个函数，别动 `build_audio.py`。
+
+```python
+def synthesize(text, out_path, voice='', speed=1.0):
+    # text 是这一幕的全部台词（已拼好，整段合成，不要自己切句）
+    # out_path 是要写出的音频路径
+    # 返回 True；抛异常就停在这一步并打印原因
+    ...
+```
+
+文件里已经写了三段可直接取消注释的示例：调命令行工具 / 调 HTTP 接口 / 调本地模型。
+改完这样跑：
+
+```bash
+python engine/build_audio.py "$EP" --provider custom
+```
+
+**为什么只改一个函数就够**：因为每句话的起止时间是从**音频的静音位置**反推的
+（`silencedetect` + DP 选最优切分），不依赖任何引擎的字级时间戳。
+只要你的 TTS 输出的是"正常朗读、句间有自然停顿"的音频，后面全部自动对齐。
+
+**三个后端都认同一件事：每幕一个文件。** 不要按句输出——那是这套流程唯一不能变的契约。
+
+**接不上时先检查这两点**：① `synthesize()` 真的把文件写到了 `out_path`；② 文件是有效音频（`ffprobe` 能读）。
+
+#### 换后端时最容易踩的坑
+
+`brand.json` 里留着上一家的音色名。比如从 minimax 切到 edge，`"voice": "male-qn-jingying"` 会被传给 Edge，报一个看不懂的 `Invalid voice`。
+
+脚本会自己发现并纠正（只认两家最常见的前缀形状），打印一行警告后改用该后端的默认音色。
+**看到这个警告不是你操作错了，是配置里有残留**——把 `tts.voice` 改成对应后端的名字，或者留空用默认。
+
 ---
 
 ## 4. 验收：两套门，分工不同
@@ -381,6 +450,8 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 ```
 
 > 目标目录解析顺序：`MEV_DST` 环境变量 > `scripts/archive_config.json` > `<项目根>/archive_output`。
+> 想用配置文件，就把 `scripts/archive_config.example.json` 复制成 `scripts/archive_config.json`
+> 再改里面的路径（注意是 **scripts/ 目录下**，不是项目根）。
 > **归档后必须回读验证**（列目录、比字节数与 sha256），不以"命令没报错"当成功。
 
 ---
@@ -404,7 +475,8 @@ python scripts/archive_flat.py ep01                              # 只归档某�
 │   ├── init_ep.py           #   建集骨架（三个插槽）
 │   ├── engine.js            #   时间轴驱动核心（seek 到任意 t 都是唯一状态）
 │   ├── standalone.template.html  # 骨架壳（安全区/字幕/角标）
-│   ├── build_audio.py       #   TTS + 静音反推句界 + 三层混音
+│   ├── build_audio.py       #   TTS（4 后端）+ 静音反推句界 + 三层混音
+│   ├── tts_custom.py        #   ★ 自定义 TTS 接入点：只改这一个函数
 │   ├── render.js            #   逐帧渲染（probe / cover / full / resume）
 │   ├── gen_srt.py           #   外挂字幕
 │   └── mux.py               #   合片 + 3:4 封面

@@ -128,6 +128,7 @@ def main():
     print('  | 5 | 结构 | seven-act（说不出来就按 R9/structures 换） |')
     print('  | 6 | 系列身份 | 单条视频，不做系列 |')
     print('  | 7 | 品牌配置 | brand.json 默认值 |')
+    print('  | 8 | 配音方案 | edge（免费，需 pip install edge-tts）；有自己的 TTS 就说，改 engine/tts_custom.py |')
     print('  ' + '-' * 66)
 
     # ---- 结论 ----

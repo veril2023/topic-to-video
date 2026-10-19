@@ -22,6 +22,8 @@
               $MINIMAX_API_KEY → <集目录>/minimax_key.txt → <项目根>/minimax_key.txt
     edge      免费，不需要 key，需要先 `pip install edge-tts`。
               音色形如 zh-CN-YunxiNeural（男）/ zh-CN-XiaoxiaoNeural（女）
+    custom    你自己的 TTS。改 engine/tts_custom.py 里那一个 synthesize() 函数即可，
+              主流程代码不用动。适合接本地模型、公司内部接口、或任何别的云服务
     none      不合成，等价于 --no-tts，要求 audio/scene_N.mp3 已经存在
 
 为什么必须先有配音再画画面：
@@ -156,6 +158,25 @@ def tts_edge(out_path, text, voice, speed):
             last = str(e)
         time.sleep(1.5 * (attempt + 1))
     raise RuntimeError('Edge TTS 失败（%s）：%s' % (os.path.basename(out_path), last))
+
+
+def tts_custom(out_path, text, voice, speed):
+    """调 engine/tts_custom.py 里使用者自己写的那一个 synthesize()。
+
+    做成"独立文件里的一个函数"而不是"配置里一条命令"，是为了让扩展只发生在这一个
+    地方：主流程不用改，也不会因为某个服务要传复杂的参数而把 build_audio.py 搞脏。
+    """
+    import importlib.util
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tts_custom.py')
+    if not os.path.isfile(p):
+        raise RuntimeError('找不到 engine/tts_custom.py（自定义 TTS 的接入点）')
+    spec = importlib.util.spec_from_file_location('_tts_custom', p)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    fn = getattr(mod, 'synthesize', None)
+    if not callable(fn):
+        raise RuntimeError('engine/tts_custom.py 里没有可调用的 synthesize() 函数')
+    return fn(text=text, out_path=out_path, voice=voice, speed=speed)
 
 
 # ------------------------------------------------------- 从静音位置反推句级节拍
@@ -293,14 +314,39 @@ def main():
     tts_cfg = brand.get('tts') or {}
 
     PROVIDER = opt('provider', tts_cfg.get('provider', 'minimax')).strip().lower()
-    if PROVIDER not in ('minimax', 'edge', 'none'):
-        print('未知的 tts.provider：%s（只支持 minimax / edge / none）' % PROVIDER)
+    if PROVIDER not in ('minimax', 'edge', 'custom', 'none'):
+        print('未知的 tts.provider：%s（只支持 minimax / edge / custom / none）' % PROVIDER)
         return 2
 
-    # 音色的默认值取决于后端：两家的 voice id 体系完全不同，不能混用
-    _voice_default = 'zh-CN-YunxiNeural' if PROVIDER == 'edge' else 'male-qn-jingying'
+    # 音色的默认值取决于后端：几家的 voice id 体系完全不同，不能混用
+    _voice_default = {'edge': 'zh-CN-YunxiNeural',
+                      'custom': ''}.get(PROVIDER, 'male-qn-jingying')
     MODEL = opt('model', tts_cfg.get('model', 'speech-2.8-hd'))
-    VOICE = opt('voice', tts_cfg.get('voice') or _voice_default)
+    _cli_voice = opt('voice', None)
+    VOICE = _cli_voice or tts_cfg.get('voice') or _voice_default
+
+    # 换后端时最容易踩的坑：brand.json 里还留着上一家的音色名。
+    # 不做通用校验（各家的 id 规则无法穷举），只认两家最常见的前缀形状。
+    # 配置里遗留的 → 直接换成该后端默认音色；命令行显式指定的 → 只警告不动它。
+    _SHAPE = {'edge': re.compile(r'^[a-z]{2}-[A-Z]{2}-', re.I),
+              'minimax': re.compile(r'^(male|female)-', re.I)}
+    if PROVIDER in _SHAPE and VOICE and not _SHAPE[PROVIDER].match(VOICE):
+        if _cli_voice:
+            print('⚠ --voice "%s" 看起来不是 %s 的音色名。如果接口报错，换成 %s 这类名称。'
+                  % (VOICE, PROVIDER, _voice_default))
+        else:
+            print('⚠ brand.json 里的 tts.voice="%s" 不是 %s 的音色名（多半是换后端前留下的），\n'
+                  '  已改用默认音色 "%s"。想指定就改 tts.voice，或删掉这行用默认。'
+                  % (VOICE, PROVIDER, _voice_default))
+            VOICE = _voice_default
+    elif PROVIDER == 'custom' and VOICE and not _cli_voice:
+        # custom 后端：配置里如果还是内置后端的音色名，说明是换后端前留下的，
+        # 用户自己的 synthesize() 多半不认识它，直接置空比传过去更安全。
+        if any(rx.match(VOICE) for rx in _SHAPE.values()):
+            print('⚠ brand.json 里的 tts.voice="%s" 是内置后端的音色名，'
+                  'custom 后端不知道怎么用，已置空。\n'
+                  '  想让你的 synthesize() 收到音色参数，就在 brand.json 里填自己的值。' % VOICE)
+            VOICE = ''
     SPEED = float(opt('speed', tts_cfg.get('speed', 1.15)))
     INTRO = float(tts_cfg.get('intro', 1.5))
     GAP = float(tts_cfg.get('gap', 0.55))
@@ -329,6 +375,15 @@ def main():
             p = os.path.join(audio, 'scene_%d.mp3' % sc['scene'])
             print('  第 %d 幕（%d 句）...' % (sc['scene'], len(sc['sentences'])))
             tts_edge(p, ''.join(sc['sentences']), VOICE, SPEED)
+            time.sleep(0.8)
+    elif PROVIDER == 'custom':
+        print('配音后端：自定义（engine/tts_custom.py）  音色 "%s"  语速 %.2f' % (VOICE, SPEED))
+        for sc in SCENES:
+            p = os.path.join(audio, 'scene_%d.mp3' % sc['scene'])
+            print('  第 %d 幕（%d 句）...' % (sc['scene'], len(sc['sentences'])))
+            tts_custom(p, ''.join(sc['sentences']), VOICE, SPEED)
+            if not (os.path.isfile(p) and os.path.getsize(p) > 1000):
+                raise RuntimeError('synthesize() 返回了但没写出有效音频：%s' % p)
             time.sleep(0.8)
     else:
         key = find_key(ep_dir)

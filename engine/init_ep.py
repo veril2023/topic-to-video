@@ -54,10 +54,13 @@ def main():
                .replace('src="engine.js"', 'src="../engine/engine.js"'))
     io.open(os.path.join(ep_dir, 'standalone.html'), 'w', encoding='utf-8', newline='\n').write(html)
 
-    # 台词结构模板：scene / sentences 是 build_audio.py 的唯一输入
-    lines = [
-        {"scene": 1, "sentences": ["（第一幕的句子，一句一个元素，写进脚本后再填）"]},
-    ]
+    # 台词结构模板：scene / sentences 是 build_audio.py 的唯一输入。
+    # 按默认结构（七幕升维）铺 7 幕占位 —— 只给 1 幕的话，粗心的人会真的只写一幕，
+    # 出来一个 30 秒的"视频"，然后才发现结构不对。换个结构就自己增删这段。
+    _acts = ['奇景', '困局', '动手', '造物', '穿透', '升维', '追问']
+    lines = [{"scene": i + 1,
+              "sentences": ["（第 %d 幕「%s」的句子，一句一个元素，写完脚本再填）" % (i + 1, name)]}
+             for i, name in enumerate(_acts)]
     io.open(os.path.join(ep_dir, 'script_lines.json'), 'w', encoding='utf-8', newline='\n').write(
         json.dumps(lines, ensure_ascii=False, indent=2) + '\n')
 

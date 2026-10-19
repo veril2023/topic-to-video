@@ -23,7 +23,21 @@
  * ==========================================================================*/
 'use strict';
 
-const puppeteer = require('puppeteer-core');
+// puppeteer-core 是这个脚本唯一的外部依赖。缺了它 Node 会甩一大段内部栈，
+// 对第一次跑的人来说等于劝退——所以自己拦下来，给一句能照做的话。
+let puppeteer;
+try {
+  puppeteer = require('puppeteer-core');
+} catch (e) {
+  console.error(
+    '\n[缺依赖] 找不到 puppeteer-core，无法驱动 Chrome 截图。\n\n' +
+    '在当前项目根目录执行：\n' +
+    '    npm i puppeteer-core\n\n' +
+    '（只装库，不会下载浏览器；浏览器用你系统里的 Chrome / Chromium，' +
+    '或用环境变量 MEV_CHROME 指定路径）\n'
+  );
+  process.exit(2);
+}
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
